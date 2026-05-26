@@ -1,0 +1,97 @@
+/* -------------------------------------- */
+/*  Tailwind MUST be the first imports    */
+/* -------------------------------------- */
+@import "tailwindcss";
+
+/* -------------------------------------- */
+/*   Global Imports                       */
+/* -------------------------------------- */
+@import "flag-icons/css/flag-icons.min.css";
+
+/* -------------------------------------- */
+/*  Root Variables                        */
+/* -------------------------------------- */
+:root {
+  --accent: #0b66b3;
+  --accent-2: #f08b3a;
+  --Vermilion: #e84a2d;
+  --blue: #3f8efc;
+  --pink: #ff4f91;
+  --muted: #6c6c6c;
+  --bg: #fbfbfd;
+  --card: #ffffff;
+  --light-text: #fff;
+  --glass: rgba(255, 255, 255, 0.72);
+  --maxw: 1200px;
+  --font-rajdhani: "Rajdhani", Inter, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-black: #343434;
+  --line: #cfcfcf;
+  --card-radius: 6px;
+
+  /* --vision-climate-primary: #4caf50; */
+  /* --vision-climate-secondary: #a5d6a7; */
+  --vision-climate-primary: #16b6a0;
+  --vision-climate-secondary: #9cd9c5;
+
+  --vision-community-primary: #1e88e5;
+  --vision-community-secondary: #bbdefb;
+
+  --vision-culture-primary: #f08b3a;
+  --vision-culture-secondary: #ffcc80;
+
+  --vision-cooperation-primary: #512da8;
+  --vision-cooperation-secondary: #b39ddb;
+}
+* {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  /* background: linear-gradient(180deg, #fff, #f7fafc); */
+  /* background: url("/images/bg-img-2.webp") no-repeat center center fixed; */
+  background-size: cover;
+  background-attachment: fixed;
+  /* font-family: Montserrat, system-ui, Arial; */
+  font-family: var(--font-rajdhani);
+  color: var(--font-black);
+  margin: 0;
+}
+a {
+  color: inherit;
+}
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0px;
+}
+
+.fi {
+  width: -1.33333em;
+  line-height: 1em;
+  display: inline-block;
+  position: relative;
+}
+.fib,
+.fi {
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.common-hover-border:hover {
+  border: 0.5px solid var(--accent-2);
+  border-left: 6px solid var(--accent-2);
+}
+
+@media print {
+  .printControls {
+    display: none !important;
+  }
+}
+/* -------------------------------------- */

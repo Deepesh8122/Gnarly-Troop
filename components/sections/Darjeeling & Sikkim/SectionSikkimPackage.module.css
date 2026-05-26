@@ -1,0 +1,284 @@
+/* Base / background */
+.section {
+  width: 100%;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: #168c6f; /* fallback */
+  background-image: url("/images/landingpage/green-bg.png");
+  background-size: cover;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  /* max-width: 1200px; */
+  /* margin: 0 auto 24px; */
+  margin: 24px;
+}
+
+.title {
+  font-size: 44px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+}
+
+.subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffda5b;
+  margin-top: 8px;
+}
+
+/* Itinerary row (auto scroll frame) */
+.itineraryRow {
+  margin: 26px auto;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: stretch;
+  padding: 8px 12px;
+  /* max-width: 1300px; */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+
+  /* hide native scrollbar visually but keep scrolling functionality */
+  scrollbar-width: none; /* firefox */
+}
+.itineraryRow::-webkit-scrollbar {
+  display: none; /* webkit */
+}
+
+/* Itinerary cards */
+.itineraryCard {
+  scroll-snap-align: center;
+  background: #fff;
+  color: #222;
+  min-width: 170px;
+  max-width: 220px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  border: 2px solid #ddd;
+  flex: 0 0 auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transform-origin: center;
+  transition: transform 380ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 380ms ease;
+}
+
+.itineraryCard:hover,
+.itineraryCard:focus {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Text inside card */
+.place {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.date {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #c0392b;
+  font-weight: 600;
+}
+
+/* Images grid
+   First card intentionally larger to mirror screenshot (desktop).
+*/
+.imagesRow {
+  margin-top: 36px;
+  /* max-width: 1300px; */
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  gap: 22px;
+  /* make the first cell larger on wide screens */
+  grid-template-columns: 340px repeat(auto-fit, minmax(220px, 1fr));
+  padding: 0 16px;
+  align-items: start;
+}
+
+.imageCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: center;
+}
+
+/* make the first highlight visually bigger with a framed look */
+.imageCard:nth-child(1) .highlightImg {
+  height: 320px;
+  object-fit: fill;
+  width: 370px;
+  border: none; /*12px solid #ffd93d; //yellow frame like screenshot */
+  border-radius: 4px;
+  /* box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16); */
+}
+
+/* other images */
+.highlightImg {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 6px solid #fff;
+  /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); */
+  transition: transform 420ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 420ms ease;
+}
+
+.imageCard:hover .highlightImg,
+.imageCard:focus-within .highlightImg {
+  transform: translateY(-6px) scale(1.02);
+  /* box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18); */
+}
+
+.caption {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Final report line */
+.finalReport {
+  font-size: 35px;
+  font-weight: 700;
+  /* margin-top: 46px; */
+}
+
+/* ===== Scroll reveal animation ===== */
+.revealTarget {
+  opacity: 0;
+  transform: translateY(16px) scale(0.985);
+  transition: opacity 520ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    transform 520ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.revealed {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Staggering on larger viewports */
+@media (min-width: 800px) {
+  .itineraryRow .itineraryCard:nth-child(1) {
+    transition-delay: 0ms;
+  }
+  .itineraryRow .itineraryCard:nth-child(2) {
+    transition-delay: 60ms;
+  }
+  .itineraryRow .itineraryCard:nth-child(3) {
+    transition-delay: 120ms;
+  }
+  .itineraryRow .itineraryCard:nth-child(4) {
+    transition-delay: 180ms;
+  }
+  .itineraryRow .itineraryCard:nth-child(5) {
+    transition-delay: 240ms;
+  }
+  .itineraryRow .itineraryCard:nth-child(6) {
+    transition-delay: 300ms;
+  }
+  .itineraryRow .itineraryCard:nth-child(7) {
+    transition-delay: 360ms;
+  }
+
+  .imagesRow .imageCard:nth-child(1) {
+    transition-delay: 0ms;
+  }
+  .imagesRow .imageCard:nth-child(2) {
+    transition-delay: 80ms;
+  }
+  .imagesRow .imageCard:nth-child(3) {
+    transition-delay: 160ms;
+  }
+  .imagesRow .imageCard:nth-child(4) {
+    transition-delay: 240ms;
+  }
+  .imagesRow .imageCard:nth-child(5) {
+    transition-delay: 320ms;
+  }
+  .header .title {
+    transition-delay: 0ms;
+  }
+  .header .subtitle {
+    transition-delay: 80ms;
+  }
+  .finalReport {
+    transition-delay: 420ms;
+  }
+}
+
+/* Mobile friendly tweaks */
+@media (max-width: 799px) {
+  .title {
+    font-size: 28px;
+  }
+  .subtitle {
+    font-size: 15px;
+  }
+  .highlightImg {
+    height: 150px;
+    border-width: 5px;
+  }
+  .imageCard:nth-child(1) .highlightImg {
+    height: 255px;
+    border-width: 8px;
+  }
+  .imagesRow {
+    grid-template-columns: 1fr;
+  }
+  .itineraryRow {
+    gap: 10px;
+    padding: 10px;
+  }
+  .itineraryCard {
+    min-width: 160px;
+    padding: 12px;
+  }
+  .finalReport {
+    font-size: 20px;
+    margin-top: 28px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .revealTarget,
+  .itineraryCard,
+  .highlightImg,
+  .imageCard {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+.joinButton {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 24px;
+  background-color: #ffda5b;
+  color: #168c6f;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transition: background-color 300ms ease, box-shadow 300ms ease;
+}
+.joinButton:hover,
+.joinButton:focus {
+  background-color: #e6c34a;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}

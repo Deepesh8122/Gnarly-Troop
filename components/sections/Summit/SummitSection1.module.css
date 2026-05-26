@@ -1,0 +1,256 @@
+.section {
+  padding: 40px 0 60px;
+  /* font-family: system-ui, sans-serif; */
+  background: transparent;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* TOP IMAGE */
+
+.mandapamWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.mandapamImage {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* HEADINGS */
+
+.heading {
+  text-align: center;
+  font-size: 26px;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: 12px;
+  font-weight: 800;
+}
+
+.dates {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f5bb5;
+  margin-bottom: 14px;
+}
+
+/* .registrationButton {
+  display: block;
+  margin: 0 auto 16px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  border: none;
+  background: #1155cc;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+} */
+
+.registrationButton {
+  display: block;
+  margin: 0 auto 16px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  border: none;
+  background: #1155cc;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  animation: softBlink 2.5s ease-in-out infinite;
+}
+
+@keyframes softBlink {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(17, 85, 204, 0.6);
+  }
+  50% {
+    opacity: 0.85;
+    box-shadow: 0 0 14px rgba(17, 85, 204, 0.9);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(17, 85, 204, 0.6);
+  }
+}
+.registrationButton:hover {
+  animation-play-state: paused;
+  background: #0f4ab0;
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 6px 14px rgba(17, 85, 204, 0.28);
+}
+
+.venue {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* PM IMAGE + QUOTE LAYOUT */
+
+.bottomLayout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+  align-items: flex-start;
+  margin-top: 10px;
+}
+
+.pmColumn {
+  text-align: center;
+  /* lift image up so it sits between register button & quote */
+  margin-top: -40%; /* tweak this value for perfect visual alignment */
+}
+
+.pmImage {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 12px;
+}
+
+.textColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.quote {
+  font-size: 22px;
+  line-height: 1.8;
+  text-align: center;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.quoteAttribution {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e67a00;
+  margin-bottom: 10px;
+}
+
+/* PARTICIPANT BUTTONS – FULL WIDTH BELOW */
+
+.participantRow {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.participantCard {
+  flex: 1 1 0;
+  border: 1px solid #ccc;
+  padding: 12px 10px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+  background: #fff;
+}
+
+.participantCard:hover {
+  background: #f2f6ff;
+  border-color: #0f5bb5;
+}
+
+.participantTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.participantSubtitle {
+  font-size: 12px;
+}
+
+/* bigger // separator */
+.participantSeparator {
+  font-size: 50px;
+  /* font-weight: 800; */
+  line-height: 1;
+  margin: 0 4px;
+}
+
+/* MODAL (unchanged if you already had it) */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modalBody {
+  overflow: auto;
+  background: #fff;
+  padding: 22px;
+  border-radius: 10px;
+  max-width: 900px;
+  width: 90%;
+  position: relative;
+  margin-top: 100px;
+}
+
+.modalClose {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  font-size: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.modalContent h3 {
+  margin-bottom: auto;
+  margin-top: auto;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.modalContent p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .bottomLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .pmColumn {
+    margin-top: 0; /* avoid weird overlap on small screens */
+  }
+
+  .pmImage {
+    max-width: 260px;
+  }
+
+  .participantRow {
+    flex-direction: column;
+  }
+
+  .participantSeparator {
+    display: none;
+  }
+}

@@ -1,0 +1,175 @@
+.title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  /* margin-bottom: 1.5rem; */
+  letter-spacing: 0.4px;
+}
+
+.footer {
+  margin-top: 1.5rem;
+}
+
+.footerCard {
+  display: grid;
+  grid-template-columns: 1fr 220px 1fr;
+  gap: 1rem;
+  align-items: center;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 2px dashed #dfe6ef;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(250, 250, 252, 0.9)
+  );
+}
+
+.leftCol,
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta {
+  margin: 0.25rem 0;
+  color: var(--muted);
+}
+.small {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0;
+}
+.tag {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.highlight {
+  color: #b84e3b;
+  font-weight: 700;
+  margin: 0;
+}
+.flagOff {
+  margin: 0.2rem 0;
+  font-size: 1rem;
+}
+
+@media (max-width: 759px) {
+  .footerCard {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .imageWrap {
+    display: block;
+    margin: 0.5rem auto;
+  }
+}
+/*below part can be remoed*/
+/*
+  Notes:
+  - Save the CSS below in the same folder as SectionSchedules.module.css
+  - This component uses a local file path for the preview image provided in the conversation history.
+  - The CSS module is scoped so styles won't leak site-wide.
+*/
+
+/* File: SectionSchedules.module.css */
+
+/* :root {
+  --accent: #1f6feb;
+  --muted: #6b7280;
+  --bg: #ffffff;
+  --card: #f8fafc;
+} */
+
+.section {
+  padding: 3rem 1rem;
+  background: linear-gradient(180deg, #fff 0%, #fbfbfd 100%);
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--bg);
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  box-shadow: 0 4px 12px rgba(18, 23, 34, 0.03);
+}
+
+.day {
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.theme {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0.45rem 0 1rem 0;
+}
+
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.block {
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+}
+
+.time {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.blockTitle {
+  margin: 0.125rem 0;
+  font-size: 0.98rem;
+}
+
+.details {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.inlineImage {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Responsive */
+@media (min-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .blocks {
+    gap: 1.25rem;
+  }
+  .block {
+    text-align: left;
+    padding-left: 0.5rem;
+  }
+  .time {
+    font-weight: 800;
+  }
+}

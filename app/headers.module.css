@@ -1,0 +1,242 @@
+/* === Header & Mobile Panel styles (paste into src/app/globals.css) === */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  z-index: 120;
+  transition: background-color 200ms ease, box-shadow 200ms ease,
+    transform 200ms;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.site-header.scrolled {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 6px 22px rgba(12, 40, 80, 0.08);
+}
+
+.site-inner {
+  /* max-width: 1200px; */
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.logo {
+  display: block;
+  object-fit: contain;
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+.brand-line1,
+.brand-line2 {
+  color: #2346b2;
+  font-weight: 700;
+}
+.brand-line1 {
+  font-size: 20px;
+}
+.brand-line2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* desktop menu */
+.desktop-menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.menu-item {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #444;
+  font-weight: 500;
+  outline: none;
+  transition: color 140ms ease, transform 100ms;
+}
+.menu-item:focus {
+  box-shadow: 0 0 0 4px rgba(11, 102, 179, 0.08);
+}
+
+/* hover lines (top and bottom) */
+.menu-item::before,
+.menu-item::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: transparent;
+  transform-origin: center;
+  transition: all 160ms ease;
+}
+.menu-item::before {
+  top: 6px;
+  transform: scaleX(0);
+}
+.menu-item::after {
+  bottom: 6px;
+  transform: scaleX(0);
+}
+.menu-item:hover::before,
+.menu-item:hover::after,
+.menu-item:focus::before,
+.menu-item:focus::after {
+  background: #2346b2;
+  transform: scaleX(1);
+}
+
+.menu-item.active {
+  color: #0b66b3;
+  font-weight: 700;
+}
+
+/* mobile toggle (hidden on desktop) */
+.mobile-toggle {
+  display: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.line {
+  fill: #2346b2;
+  transition: transform 250ms ease, opacity 200ms ease;
+  transform-origin: center;
+}
+/* hamburger -> X */
+.mobile-toggle.open .top {
+  transform: translateY(7px) rotate(45deg);
+}
+.mobile-toggle.open .mid {
+  opacity: 0;
+}
+.mobile-toggle.open .bot {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* MOBILE overlay container (backdrop) */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 130; /* above header */
+  display: flex;
+  pointer-events: none;
+}
+.mobile-overlay.open {
+  pointer-events: auto;
+}
+
+/* blurred + dim backdrop */
+.mobile-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.mobile-overlay.open::before {
+  opacity: 1;
+}
+
+/* sliding panel */
+.mobile-panel {
+  position: relative;
+  width: 92%;
+  max-width: 420px;
+  height: 100%;
+  background: linear-gradient(180deg, #fff, #fbfbff);
+  box-shadow: 0 40px 120px rgba(6, 10, 20, 0.28);
+  padding: 28px 20px;
+  transform: translateX(-100%);
+  transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: auto;
+}
+.mobile-panel.open {
+  transform: translateX(0);
+}
+
+.mobile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.close-btn {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+.mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mobile-item {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #111;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+.mobile-item.active {
+  background: rgba(11, 102, 179, 0.06);
+  color: #0b66b3;
+}
+
+.header-spacer {
+  height: 100px;
+}
+
+/* RESPONSIVE: show mobile toggle and hide desktop menu on small screens */
+@media (max-width: 900px) {
+  .desktop-menu {
+    display: none;
+  }
+  .mobile-toggle {
+    display: inline-flex;
+  }
+  .brand-line1 {
+    font-size: 18px;
+  }
+  .brand-line2 {
+    font-size: 13px;
+  }
+  .mobile-overlay {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+}

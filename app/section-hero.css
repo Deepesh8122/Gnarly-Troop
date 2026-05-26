@@ -1,0 +1,324 @@
+/* section-hero.css - hero video + content */
+
+/* container */
+.hero-section {
+  position: relative;
+  min-height: 680px;
+  color: var(--card);
+  overflow: hidden;
+}
+
+/* background video */
+.hero-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: saturate(0.95) contrast(0.92);
+  background: #000;
+}
+
+/* overlay for readability */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(6, 8, 12, 0.86) 0%,
+    rgba(6, 8, 12, 0.6) 30%,
+    rgba(0, 0, 0, 0.28) 55%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  z-index: 1;
+}
+
+/* small overlay controls (top-right) */
+.hero-controls {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  z-index: 8;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* small circular buttons */
+.hc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--light-text);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  transition: transform 140ms ease, background 140ms;
+}
+.hc-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+}
+/* Play Video button: slightly wider with icon + text */
+.hc-play {
+  display: inline-flex;
+  gap: 8px;
+  padding: 8px 12px;
+  min-width: 120px;
+  border-radius: 12px;
+}
+.hc-play .hc-play-text {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--light-text);
+}
+
+/* modal styles (unchanged) */
+.hero-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 8, 12, 0.68);
+  padding: 24px;
+}
+.hero-modal-card {
+  width: min(920px, 96%);
+  background: linear-gradient(180deg, #000, #111);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 40px 120px rgba(6, 10, 20, 0.6);
+}
+.hero-modal video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* content container */
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 460px;
+  gap: 28px;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 50px 0;
+  box-sizing: border-box;
+}
+
+/* left column */
+.hero-left {
+  color: var(--light-text);
+  max-width: 720px;
+}
+
+.hero-theme-script {
+  letter-spacing: 2px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--light-text);
+  margin-bottom: 30px;
+}
+
+.hero-tag {
+  letter-spacing: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 35px;
+}
+
+/* Titles */
+.hero-title {
+  margin: 0 0 -18px 0;
+  line-height: 1.03;
+  font-family: var(--font-rajdhani);
+}
+
+.hero-title .accent {
+  display: inline-block;
+  color: var(--accent-2);
+  font-weight: 600;
+  font-size: 44px;
+  font-style: italic;
+  margin-bottom: 18px;
+}
+
+.hero-title .big {
+  display: block;
+  color: var(--light-text);
+  font-weight: 700;
+  font-size: 46px;
+}
+
+/* date badge */
+.hero-date {
+  display: inline-block;
+  margin-top: 8%;
+  margin-bottom: 35px;
+  background: #2d66f5;
+  color: var(--light-text);
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+
+/* quick nav links */
+.hero-links {
+  margin-top: 10%;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
+}
+.hero-links a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  position: relative;
+  text-decoration: none;
+}
+
+.hero-links a::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: var(--light-text);
+  transition: width 0.3s ease;
+}
+
+.hero-links a:hover::after {
+  width: 100%;
+}
+
+.hero-links .sep {
+  opacity: 0.38;
+}
+
+/* right column person image */
+.hero-right {
+  display: flex;
+  align-items: flex-end; /* align image to the bottom of the column */
+  justify-content: center;
+  position: relative;
+  padding-bottom: 4px; /* small spacing so shadow looks natural */
+  z-index: 2;
+}
+/* keep image responsive but anchored to bottom */
+.hero-person {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 6px;
+  transform: translateY(6px);
+}
+.hero-person-img {
+  /* height: 550px; */
+  margin-bottom: -65%;
+}
+
+/* responsive */
+@media (max-width: 960px) {
+  .hero-inner {
+    grid-template-columns: 1fr 320px;
+    padding: 56px 18px;
+  }
+  .hero-title .accent {
+    font-size: 34px;
+  }
+  .hero-title .big {
+    font-size: 32px;
+  }
+  /* .hero-person {
+    max-width: 360px;
+    max-height: calc(100vh - 220px);
+    transform: translateY(4px);
+  } */
+}
+@media (max-width: 720px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+    padding: 48px 18px;
+    gap: 20px;
+  }
+  .hero-right {
+    order: 2;
+    justify-content: center;
+  }
+  .hero-left {
+    order: 1;
+  }
+  .hero-title .accent {
+    font-size: 28px;
+  }
+  .hero-title .big {
+    font-size: 24px;
+  }
+  /* .hero-person {
+    max-width: 260px;
+    transform: translateY(0);
+    margin-bottom: 0;
+  } */
+
+  .hero-person-img {
+    height: 250px;
+    margin-bottom: -65%;
+  }
+
+  .hero-controls-bottom {
+    left: 16px;
+    bottom: 16px;
+    gap: 8px;
+  }
+  .hc-btn {
+    min-width: 40px;
+    height: 40px;
+  }
+  .hc-play {
+    min-width: 96px;
+    padding: 6px 10px;
+  }
+}
+/* bottom-left controls for hero (play / mute / play video popup) */
+.hero-controls-bottom {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  z-index: 8;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+/* Blink animation */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.hero-controls-bottom {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  animation: blink 2.4s infinite ease-in-out;
+}

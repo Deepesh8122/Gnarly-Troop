@@ -1,0 +1,190 @@
+/* ============================
+   ARTICLE WRAPPER
+   ============================ */
+.article {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 64px 24px;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  color: #1f2937;
+}
+
+/* ============================
+   HEADER / TITLE
+   ============================ */
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  color: #111827;
+}
+
+.meta {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.author {
+  font-weight: 600;
+}
+
+.readTime {
+  margin-left: 6px;
+}
+
+/* ============================
+   HERO IMAGE
+   ============================ */
+.heroImage {
+  margin: 32px 0;
+}
+
+.heroImage img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+}
+
+/* ============================
+   CONTENT AREA
+   ============================ */
+.content {
+  position: relative;
+}
+
+/* ============================
+   PARAGRAPHS (Gates-style)
+   ============================ */
+.paragraph {
+  font-size: 18px;
+  line-height: 1.8;
+  margin: 1.5em 0;
+  text-align: left;
+}
+
+/* ============================
+   LISTS (CRITICAL FIX)
+   ============================ */
+.unorderedList,
+.orderedList {
+  margin: 1.6em 0;
+  padding-left: 1.8em; /* desktop indent */
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.unorderedList {
+  list-style-type: disc;
+}
+
+.orderedList {
+  list-style-type: decimal;
+}
+
+.unorderedList li,
+.orderedList li {
+  margin-bottom: 0.6em;
+  padding-left: 0.2em; /* aligns text with bullet nicely */
+}
+
+/* ============================
+   BLOCKQUOTE (Editorial style)
+   ============================ */
+.blockquote {
+  margin: 1.8em 0;
+  padding-left: 1.2em;
+  border-left: 4px solid #d1d5db;
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.7;
+  color: #374151;
+}
+
+/* ============================
+   MOBILE FIX (VERY IMPORTANT)
+   ============================ */
+@media (max-width: 768px) {
+  .article {
+    padding: 32px 16px;
+    max-width: 100%;
+  }
+
+  .title {
+    font-size: 26px;
+    line-height: 1.25;
+  }
+
+  .meta {
+    font-size: 14px;
+  }
+
+  .heroImage {
+    margin: 20px 0;
+  }
+
+  .paragraph {
+    font-size: 16px;
+    line-height: 1.7;
+    margin: 1.2em 0;
+  }
+
+  /* 🔹 MOBILE LIST ALIGNMENT (KEY FIX) */
+  .unorderedList,
+  .orderedList {
+    padding-left: 1.2em; /* reduce indent */
+    margin: 1.2em 0;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .unorderedList li,
+  .orderedList li {
+    margin-bottom: 0.5em;
+    padding-left: 0.1em;
+  }
+
+  .blockquote {
+    font-size: 16px;
+    padding-left: 1em;
+    margin: 1.4em 0;
+  }
+}
+
+/* ============================
+   VERY SMALL SCREENS
+   ============================ */
+@media (max-width: 480px) {
+  .title {
+    font-size: 24px;
+  }
+
+  .paragraph {
+    font-size: 15.5px;
+  }
+
+  .unorderedList,
+  .orderedList {
+    font-size: 15.5px;
+  }
+}
+/* ============================
+   FOOTER SAFE AREA
+   ============================ */
+.footerSafe {
+  padding-bottom: 120px; /* space for floating share */
+}
+
+@media (max-width: 768px) {
+  .footerSafe {
+    padding-bottom: 140px;
+  }
+}
+

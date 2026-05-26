@@ -1,0 +1,99 @@
+.footerWrapper {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  padding: 60px 80px;
+  /* background: #1f1e1d; */
+  background-image: url("/images/footer-bg.png");
+}
+
+.footerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* <-- CENTER EVERYTHING VERTICALLY */
+  margin-top: 10%;
+}
+
+.leftCol {
+  display: flex;
+  align-items: center; /* <-- CENTER LOGO VERTICALLY */
+}
+
+.logoBox img {
+  display: block;
+}
+
+.rightCol {
+  display: flex;
+  gap: 80px;
+  align-items: center; /* <-- CENTER BOTH MENUS VERTICALLY */
+  color: #fff;
+}
+
+.rightCol ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  line-height: 26px;
+}
+
+.rightCol ul li {
+  cursor: pointer;
+  transition: 0.3s;
+  white-space: nowrap;
+}
+
+.rightCol ul li:hover {
+  opacity: 0.7;
+}
+
+.footerDonateBtn {
+  position: absolute;
+  top: 30%;
+  right: 15%;
+  z-index: 5;
+}
+/* ============================
+   MOBILE ONLY FIX
+   DOES NOT AFFECT DESKTOP
+   ============================ */
+@media (max-width: 768px) {
+  .footerWrapper {
+    height: auto; /* allow footer to grow */
+    padding: 40px 16px; /* safe mobile padding */
+  }
+
+  .footerContent {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 110px; /* remove desktop offset */
+    gap: 32px;
+  }
+
+  .leftCol {
+    justify-content: center;
+  }
+
+  .rightCol {
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .rightCol ul {
+    text-align: center;
+  }
+
+  .rightCol ul li {
+    white-space: normal; /* allow text wrap on mobile */
+    font-size: 16px;
+  }
+
+  .footerDonateBtn {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+  }
+}

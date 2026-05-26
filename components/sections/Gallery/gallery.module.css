@@ -1,0 +1,358 @@
+/* gallery.module.css */
+
+/* page */
+.galleryWrapper {
+  padding: 48px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pageHeading {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* -------------------------------
+   SECTION CAROUSEL (Improved)
+--------------------------------*/
+.sectionsCarouselWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 25px;
+}
+
+/* horizontal scroll area */
+.sectionsCarousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 6px 4px 14px;
+  scrollbar-width: none;
+}
+
+.sectionsCarousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* arrows */
+.carouselArrowLeft,
+.carouselArrowRight {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  width: 46px;
+  height: 64px;
+  font-size: 30px;
+  cursor: pointer;
+  border-radius: 12px;
+  display: none;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+}
+
+.carouselArrowLeft:hover,
+.carouselArrowRight:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+@media (min-width: 768px) {
+  .carouselArrowLeft,
+  .carouselArrowRight {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .carouselArrowLeft {
+    margin-right: 12px;
+  }
+  .carouselArrowRight {
+    margin-left: 12px;
+  }
+}
+
+/* -----------------------------------
+   SECTION CARDS (improved hover & spacing)
+------------------------------------*/
+.sectionCard {
+  min-width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.sectionCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+}
+
+.cardImageWrap {
+  width: 100%;
+  height: 165px;
+  overflow: hidden;
+  background: #f8f8f8;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardMeta {
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.cardCount {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* --------------------------------------------------
+   MODAL / OVERLAY (enhanced density + shadows)
+---------------------------------------------------*/
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 1100px;
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  animation: scaleIn 0.22s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fafafa;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modalCount {
+  font-size: 0.96rem;
+  color: #333;
+  opacity: 0.9;
+}
+
+.closeBtn {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.18s ease;
+}
+
+.closeBtn:hover {
+  background: #111;
+  color: #fff;
+}
+
+/* modal body */
+.modalBody {
+  padding: 14px;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+/* grid / thumbnail view */
+.gridButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.gridButtons button {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #c7ddee;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.gridButtons button:hover {
+  background: #91a9eb;
+}
+
+.activeViewBtn {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.gridItem {
+  background: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+}
+
+.gridThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.gridItem:hover .gridThumb {
+  transform: scale(1.05);
+}
+
+/* carousel view */
+.carouselWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.carouselNavLeft,
+.carouselNavRight {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  font-size: 2.2rem;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transition: all 0.18s ease;
+}
+
+.carouselNavLeft:hover,
+.carouselNavRight:hover {
+  transform: scale(1.06);
+}
+
+.carouselViewport {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+}
+
+.carouselImageWrap {
+  /* width: 100%; */
+  height: 70%;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carouselImage {
+  width: 100%; /* fill entire width */
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 0;
+}
+
+.carouselFooter {
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.backToGrid {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #111;
+  font-size: 0.95rem;
+}
+
+.backToGrid:hover {
+  text-decoration: underline;
+}
+
+.carouselCounter {
+  font-size: 0.95rem;
+  color: #333;
+}

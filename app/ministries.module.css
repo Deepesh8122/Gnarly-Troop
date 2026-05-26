@@ -1,0 +1,187 @@
+.carousel {
+  position: relative;
+  max-width: 1400px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28px 12px 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto;
+  /* padding: 28px 16px; */
+}
+
+/* visual mask */
+.viewport {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 8px 28px;
+}
+
+/* the scrolling track - hide native scrollbar */
+.track {
+  display: flex;
+  gap: 18px;
+  padding-bottom: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+
+  /* Hide scrollbar - WebKit */
+}
+.track::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Hide scrollbar - Firefox */
+.track {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+/* each card */
+.slide {
+  flex: 0 0 360px;
+  scroll-snap-align: center;
+  background: #fff;
+  border-radius: 14px;
+  padding: 0 18px 18px 18px;
+  box-sizing: border-box;
+  border: 1px solid rgba(10, 20, 30, 0.06);
+  box-shadow: 0 10px 28px rgba(12, 20, 30, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 220ms ease, box-shadow 220ms ease;
+  margin-top: 10px;
+}
+
+.slide:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(12, 20, 30, 0.09);
+  border: 0.5px solid var(--accent-2);
+  border-left: 6px solid var(--accent-2);
+}
+
+/* top image */
+.topImageWrap {
+  width: 100%;
+  padding-top: 8px;
+}
+
+.topImage {
+  /* width: 100%; */
+  /* height: 140px; */
+  object-fit: fill;
+  border-radius: 10px;
+  display: block;
+  /* background: #f6f6f6; */
+}
+
+/* titles */
+.title1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2b2b2b;
+  line-height: 1.15;
+}
+
+.title2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.15;
+}
+
+/* description - justified */
+.description {
+  margin: 0;
+  font-size: 13px;
+  color: #2b2b2b;
+  line-height: 1.45;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* nav buttons */
+.nav {
+  background: #fff;
+  border: 1px solid rgba(10, 20, 30, 0.06);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(12, 20, 30, 0.06);
+  z-index: 3;
+}
+
+.left {
+  margin-left: 6px;
+}
+
+.right {
+  margin-right: 6px;
+}
+
+/* dots */
+.dots {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  border: none;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.dotActive {
+  transform: scale(1.2);
+  background: rgba(0, 86, 255, 0.95);
+}
+
+/* responsive adjustments */
+@media (max-width: 980px) {
+  .slide {
+    flex: 0 0 300px;
+  }
+  .topImage {
+    height: 120px;
+  }
+}
+
+@media (max-width: 560px) {
+  .carousel {
+    padding: 18px 6px 54px;
+  }
+  .viewport {
+    padding: 8px 12px;
+  }
+  .slide {
+    flex: 0 0 84%;
+    padding: 8px 14px 14px 14px;
+  }
+  .topImage {
+    height: 140px;
+  }
+  .nav {
+    display: none;
+  }
+}

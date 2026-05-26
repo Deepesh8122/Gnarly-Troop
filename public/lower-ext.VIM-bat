@@ -1,0 +1,43 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+:: Clear single-letter environment variables that can break expansion
+for %%L in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "%%L="
+
+for /r %%f in (*) do (
+    set "ext=%%~xf"
+    set "lower=!ext!"
+
+    set "lower=!lower:A=a!"
+    set "lower=!lower:B=b!"
+    set "lower=!lower:C=c!"
+    set "lower=!lower:D=d!"
+    set "lower=!lower:E=e!"
+    set "lower=!lower:F=f!"
+    set "lower=!lower:G=g!"
+    set "lower=!lower:H=h!"
+    set "lower=!lower:I=i!"
+    set "lower=!lower:J=j!"
+    set "lower=!lower:K=k!"
+    set "lower=!lower:L=l!"
+    set "lower=!lower:M=m!"
+    set "lower=!lower:N=n!"
+    set "lower=!lower:O=o!"
+    set "lower=!lower:P=p!"
+    set "lower=!lower:Q=q!"
+    set "lower=!lower:R=r!"
+    set "lower=!lower:S=s!"
+    set "lower=!lower:T=t!"
+    set "lower=!lower:U=u!"
+    set "lower=!lower:V=v!"
+    set "lower=!lower:W=w!"
+    set "lower=!lower:X=x!"
+    set "lower=!lower:Y=y!"
+    set "lower=!lower:Z=z!"
+
+    if not "!ext!"=="!lower!" (
+        ren "%%f" "%%~nf!lower!"
+    )
+)
+
+endlocal
