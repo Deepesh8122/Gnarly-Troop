@@ -7,6 +7,8 @@ import {
   getLeadershipStaticParams,
 } from "@/src/lib/leadership";
 
+export const revalidate = 60;
+
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {

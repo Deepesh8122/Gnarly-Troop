@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
+import CmsImage from "@/components/ui/CmsImage";
 import MoreAboutFoundation from "@/components/sections/shared/MoreAboutFoundation";
 import type { LeadershipItem } from "@/src/lib/leadership";
 import styles from "./LeadershipProfile.module.css";
@@ -29,7 +30,7 @@ export default function LeadershipProfile({ person }: Props) {
 
       <div className={styles.profile}>
         <div className={styles.portraitWrap}>
-          <img src={person.src} alt={person.alt} className={styles.portrait} />
+          <CmsImage src={person.src} alt={person.alt} className={styles.portrait} />
         </div>
 
         <header className={styles.profileHeader}>

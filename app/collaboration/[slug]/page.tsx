@@ -9,6 +9,8 @@ import {
   getCollaborationSlugs,
 } from "@/src/lib/collaboration";
 
+export const revalidate = 60;
+
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {

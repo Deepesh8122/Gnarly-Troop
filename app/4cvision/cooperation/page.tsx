@@ -1,12 +1,17 @@
 import Header from "@/components/sections/Header";
 import SectionCooperation from "@/components/sections/4CVision/SectionCooperation";
 import Footer from "@/components/sections/SectionFooter";
+import { getVisionPillarPage } from "@/lib/cms/vision";
 
-export default function FourCVisionClimate() {
+export const revalidate = 60;
+
+export default async function FourCVisionCooperation() {
+  const cmsData = await getVisionPillarPage("cooperation");
+
   return (
     <>
       <Header />
-      <SectionCooperation />
+      <SectionCooperation cmsData={cmsData} />
       <Footer />
     </>
   );

@@ -8,6 +8,8 @@ import {
   getRegions,
 } from "@/src/lib/leadership";
 
+export const revalidate = 60;
+
 export const metadata = {
   title: "Leadership — Gnarly Troop",
   description:
@@ -26,9 +28,22 @@ export default async function LeadershipPage() {
       getRegions(),
     ]);
 
+  const total =
+    executive.length +
+    board.length +
+    advisory.length +
+    leaders.length +
+    historical.length;
+
   return (
     <>
       <Header />
+      {total === 0 ? (
+        <p className="mx-auto max-w-lg p-16 text-center text-zinc-600">
+          No leadership profiles published yet. Use Admin → Dashboard → Import static
+          content, or add members under Leadership.
+        </p>
+      ) : (
       <SectionLeadershipListing
         executive={executive}
         board={board}
@@ -38,6 +53,7 @@ export default async function LeadershipPage() {
         divisions={divisions}
         regions={regions}
       />
+      )}
       <MoreAboutFoundation />
       <Footer />
     </>
