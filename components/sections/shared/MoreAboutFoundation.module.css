@@ -1,0 +1,60 @@
+.section {
+  border-top: 1px solid var(--line);
+  background: #fff;
+  padding: 56px 0 72px;
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heading {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 600;
+  color: var(--font-black);
+  margin: 0 0 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.colTitle {
+  font-family: var(--font-rajdhani);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  margin: 0 0 10px;
+  color: #111;
+}
+
+.colDesc {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #444;
+  margin: 0 0 14px;
+}
+
+.colLink {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 0.95rem;
+  color: #111;
+  text-decoration: underline;
+}
+
+.colLink:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}

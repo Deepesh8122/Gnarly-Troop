@@ -1,0 +1,300 @@
+.page {
+  background: #fff;
+  padding-bottom: 48px;
+}
+
+/* Unified section headings — same size, weight, casing everywhere */
+.sectionHeading {
+  font-family: var(--font-rajdhani), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 24px;
+  color: #111;
+  line-height: 1.2;
+}
+
+.intro {
+  border-bottom: 1px solid var(--line);
+  padding: 48px 24px 56px;
+}
+
+.introInner {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(200px, 320px) 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.pageTitle {
+  font-family: var(--font-rajdhani), system-ui, sans-serif;
+  font-size: clamp(2.75rem, 7vw, 4.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 0.95;
+  color: #111;
+}
+
+.introText p {
+  margin: 0 0 14px;
+  line-height: 1.7;
+  font-size: 1.05rem;
+  color: #333;
+  max-width: 52ch;
+}
+
+.carouselSection {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.carouselTrack {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.carouselItem {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+}
+
+/* Fixed uniform portrait size for every member */
+.card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.cardImageWrap {
+  width: 100%;
+  height: 340px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #ececec;
+  flex-shrink: 0;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.cardName {
+  font-family: var(--font-rajdhani), system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 14px 0 4px;
+  color: #111;
+  line-height: 1.25;
+}
+
+.cardTitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.cardShort {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0 0 10px;
+  color: #444;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.readMore {
+  font-size: 0.875rem;
+  color: #0067c5;
+  font-weight: 600;
+  margin-top: auto;
+}
+
+.readMore:hover {
+  text-decoration: underline;
+}
+
+.advisorySection {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  border-top: 1px solid var(--line);
+}
+
+.advisoryHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.advisoryDesc {
+  max-width: 560px;
+  line-height: 1.65;
+  margin: -12px 0 0;
+  color: #444;
+  font-size: 1rem;
+}
+
+.viewAll {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0067c5;
+  text-decoration: underline;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.advisoryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.meetSection,
+.historicalSection {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.meetSection {
+  border-top: 1px solid var(--line);
+}
+
+.searchRow {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.searchRow input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #aaa;
+  border-right: none;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.searchRow button {
+  padding: 14px 28px;
+  background: #111;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.filters select {
+  flex: 1;
+  min-width: 140px;
+  max-width: 280px;
+  padding: 12px 14px;
+  border: 1px solid #aaa;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px 24px;
+}
+
+.empty {
+  color: var(--muted);
+  grid-column: 1 / -1;
+  padding: 24px 0;
+}
+
+@media (max-width: 1024px) {
+  .advisoryGrid,
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .carouselItem {
+    flex: 0 0 260px;
+  }
+
+  .cardImageWrap {
+    height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .introInner {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .advisoryHead {
+    flex-direction: column;
+  }
+
+  .advisoryGrid,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .carouselItem {
+    flex: 0 0 min(280px, 88vw);
+  }
+
+  .filters select {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardImageWrap {
+    height: 280px;
+  }
+
+  .searchRow {
+    flex-direction: column;
+  }
+
+  .searchRow input {
+    border-right: 1px solid #aaa;
+    border-bottom: none;
+  }
+
+  .searchRow button {
+    width: 100%;
+  }
+}

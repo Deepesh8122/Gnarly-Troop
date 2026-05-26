@@ -1,0 +1,517 @@
+.page {
+  background: #2b2f35;
+}
+
+/* —— Hero video —— */
+.heroShell {
+  position: relative;
+  margin: 0 12px;
+  border-radius: 28px 28px 0 0;
+  overflow: hidden;
+  min-height: min(85vh, 720px);
+  display: flex;
+  align-items: flex-end;
+}
+
+.heroMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.heroVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 22, 26, 0.35) 0%,
+    rgba(20, 22, 26, 0.75) 55%,
+    rgba(20, 22, 26, 0.92) 100%
+  );
+}
+
+.heroPlay {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.playIcon {
+  display: block;
+  width: 0;
+  height: 0;
+  margin: 0 auto;
+  border-left: 20px solid #fff;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  margin-left: 6px;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 3;
+  max-width: 640px;
+  padding: 48px 32px 56px;
+  color: #fff;
+}
+
+.heroLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffd900;
+  margin: 0 0 12px;
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+}
+
+.heroBody {
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.65;
+  margin: 0 0 24px;
+  opacity: 0.95;
+}
+
+.yellowBtn {
+  display: inline-block;
+  padding: 14px 24px;
+  background: #ffd900;
+  color: #111;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.yellowBtn:hover {
+  filter: brightness(0.94);
+}
+
+/* —— Mission —— */
+.missionBand {
+  background: #2b2f35;
+  color: #fff;
+  text-align: center;
+  padding: 80px 24px;
+}
+
+.missionQuote {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.35rem, 3.2vw, 2.1rem);
+  font-style: italic;
+  line-height: 1.45;
+  max-width: 860px;
+  margin: 0 auto 24px;
+  border: none;
+  padding: 0;
+}
+
+.missionLine {
+  width: 48px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.5);
+  margin: 0 auto 16px;
+}
+
+.missionAttr {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+/* —— Narrative rows —— */
+.narrativeRow {
+  background: #2b2f35;
+  color: #fff;
+  padding: 56px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.narrativeInner {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.narrativeFlip .narrativeInner {
+  direction: rtl;
+}
+
+.narrativeFlip .narrativeInner > * {
+  direction: ltr;
+}
+
+.narrativeMedia img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+.narrativeCopy h2 {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 20px;
+  line-height: 1.3;
+}
+
+.narrativeCopy p {
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0 0 14px;
+  opacity: 0.92;
+}
+
+/* —— Yellow highlight —— */
+.highlightBand {
+  padding: 0 24px 56px;
+  background: #2b2f35;
+}
+
+.highlightCard {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #ffd900;
+  color: #111;
+  border-radius: 16px;
+  padding: 40px 36px;
+  text-align: center;
+}
+
+.highlightCard h2 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.highlightCard p {
+  margin: 0;
+  line-height: 1.65;
+  font-size: 1.05rem;
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+/* —— Light zone —— */
+.lightZone {
+  background: #f3f1eb;
+  border-radius: 32px 32px 0 0;
+  margin-top: -1px;
+  padding: 56px 0 80px;
+}
+
+.achievementSection,
+.trackingSection,
+.roadSection,
+.groupsSection {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+.achievementCard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  background: #faf8f4;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+.achievementText h2 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 14px;
+}
+
+.achievementText p {
+  line-height: 1.65;
+  margin: 0 0 20px;
+  color: #333;
+}
+
+.achievementVisual {
+  background: #343434;
+  border-radius: 12px;
+  min-height: 220px;
+  display: flex;
+  align-items: flex-end;
+  padding: 24px;
+}
+
+.waveChart {
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(
+    90deg,
+    #ffd900 0%,
+    #16b6a0 35%,
+    #512da8 70%,
+    #e84a2d 100%
+  );
+  border-radius: 4px;
+  opacity: 0.9;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'%3E%3Cpath d='M0 60 Q50 20 100 50 T200 30 T300 55 T400 25 V80 H0 Z' fill='white'/%3E%3C/svg%3E");
+  mask-size: cover;
+}
+
+.trackingSection {
+  text-align: center;
+  padding-top: 24px;
+}
+
+.trackingIcon {
+  color: #ffd900;
+  margin-bottom: 12px;
+}
+
+.trackingTitle {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px;
+}
+
+.trackingBody {
+  max-width: 560px;
+  margin: 0 auto 20px;
+  line-height: 1.65;
+  color: #444;
+}
+
+.trackingRule {
+  height: 1px;
+  background: #ccc;
+  max-width: 100%;
+  margin: 0 auto 32px;
+}
+
+.trackingStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 900;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.statCol p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #555;
+}
+
+.roadCard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  background: #faf8f4;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+.roadImageWrap img {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.roadText {
+  padding: 32px 32px 32px 0;
+}
+
+.roadText h2 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+
+.roadText p {
+  line-height: 1.65;
+  margin: 0 0 20px;
+  color: #333;
+}
+
+.groupsTitle {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 8px;
+}
+
+.groupsLead {
+  color: #555;
+  margin: 0 0 28px;
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+.groupsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.groupCard {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  height: 100%;
+}
+
+.groupCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.groupImageWrap {
+  height: 220px;
+  overflow: hidden;
+}
+
+.groupImageWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.groupCard:hover .groupImageWrap img {
+  transform: scale(1.04);
+}
+
+.groupBody {
+  padding: 20px 22px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.groupBody h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.groupBody p {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #555;
+  margin: 0 0 14px;
+  flex: 1;
+}
+
+.groupLink {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .narrativeInner,
+  .achievementCard,
+  .roadCard,
+  .trackingStats {
+    grid-template-columns: 1fr;
+  }
+
+  .narrativeFlip .narrativeInner {
+    direction: ltr;
+  }
+
+  .narrativeMedia img {
+    height: 280px;
+  }
+
+  .roadText {
+    padding: 24px;
+  }
+
+  .groupsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroShell {
+    min-height: 70vh;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .heroContent {
+    padding: 32px 20px 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .trackingStats {
+    gap: 32px;
+  }
+
+  .statCol {
+    padding: 0 8px;
+  }
+
+  .missionBand {
+    padding: 56px 20px;
+  }
+
+  .highlightCard {
+    padding: 28px 20px;
+  }
+}
