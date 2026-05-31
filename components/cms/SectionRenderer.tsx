@@ -1,5 +1,6 @@
 import type { PageSection } from "@gnarly/types";
 import { SECTION_COMPONENT_MAP } from "@gnarly/types";
+import type { MinisterCard } from "@gnarly/lib";
 import SectionHeroVideo from "@/components/sections/SectionHeroVideo";
 import SectionAbout from "@/components/sections/SectionAbout";
 import SectionTimeline from "@/components/sections/SectionTimeline";
@@ -20,24 +21,39 @@ type SectionRendererProps = {
   data: Record<string, unknown>;
 };
 
-/**
- * Renders existing UI components — no redesign.
- * Props adapters will map `data` → component props per section (phase 2).
- */
+function config(data: Record<string, unknown>): Record<string, unknown> {
+  return (data.config as Record<string, unknown>) ?? data;
+}
+
 export function SectionRenderer({ section, data }: SectionRendererProps) {
   const key = SECTION_COMPONENT_MAP[section.section_type];
+  const cfg = config(data);
 
   switch (key) {
     case "SectionHeroVideo":
       return (
         <SectionHeroVideo
-          videoSrc={(data.videoSrc as string) ?? "/hero.mp4"}
-          founderImg={(data.founderImg as string) ?? "/images/sections/founder-img.png"}
-          pmImg={(data.pmImg as string) ?? "/images/sections/pm-img.png"}
+          videoSrc={(data.videoSrc as string) ?? (cfg.videoSrc as string) ?? "/hero.mp4"}
+          founderImg={
+            (data.founderImg as string) ??
+            (cfg.founderImg as string) ??
+            "/images/sections/founder-img.png"
+          }
+          pmImg={
+            (data.pmImg as string) ?? (cfg.pmImg as string) ?? "/images/sections/pm-img.png"
+          }
         />
       );
     case "SectionAbout":
-      return <SectionAbout />;
+      return (
+        <SectionAbout
+          titleHi={cfg.titleHi as string | undefined}
+          titleEn={cfg.titleEn as string | undefined}
+          subtitle={cfg.subtitle as string | undefined}
+          estd={cfg.estd as string | undefined}
+          backgroundImage={cfg.backgroundImage as string | undefined}
+        />
+      );
     case "SectionTimeline":
       return <SectionTimeline />;
     case "SectionVisions": {
@@ -61,9 +77,11 @@ export function SectionRenderer({ section, data }: SectionRendererProps) {
       return (
         <SectionMinisterLetter
           staticImage={
-            (data.staticImage as string) ?? "/images/sections/img-globe-girl-flag-2.png"
+            (data.staticImage as string) ??
+            (cfg.staticImage as string) ??
+            "/images/sections/img-globe-girl-flag-2.png"
           }
-          cards={(data.cards as Parameters<typeof SectionMinisterLetter>[0]["cards"]) ?? []}
+          cards={(data.cards as MinisterCard[]) ?? (cfg.cards as MinisterCard[]) ?? []}
         />
       );
     case "SectionMinistries":

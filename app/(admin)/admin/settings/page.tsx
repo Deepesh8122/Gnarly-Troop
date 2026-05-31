@@ -1,11 +1,12 @@
+import Link from "next/link";
 import AdminNotConfigured from "@/components/admin/AdminNotConfigured";
+import AdminSiteSettingField from "@/components/admin/AdminSiteSettingField";
 import {
   AdminCheckbox,
   AdminForm,
   AdminInput,
   AdminPageHeader,
   AdminSubmit,
-  AdminTextarea,
 } from "@/components/admin/AdminForm";
 import { getAdminSettings } from "@/lib/admin/data";
 import { saveSocialLinkAction, updateSiteSettingAction } from "@/lib/admin/actions";
@@ -23,21 +24,32 @@ export default async function AdminSettingsPage() {
 
       <section className="space-y-4">
         <h3 className="text-lg font-semibold text-slate-900">Site settings</h3>
-        {settings.map((s) => (
-          <div key={s.key} className="admin-card p-5">
-            <p className="mb-2 font-mono text-sm text-amber-200">{s.key}</p>
-            {s.description && <p className="mb-3 text-xs text-zinc-500">{s.description}</p>}
-            <AdminForm action={updateSiteSettingAction.bind(null, s.key)}>
-              <AdminTextarea
-                label="Value (JSON)"
-                name="value"
-                defaultValue={JSON.stringify(s.value, null, 2)}
-                rows={3}
-              />
-              <AdminSubmit />
-            </AdminForm>
-          </div>
-        ))}
+        {settings.map((s) => {
+          if (s.key === "collaboration_landing") {
+            return (
+              <div key={s.key} className="admin-card p-5">
+                <p className="mb-2 font-mono text-sm text-slate-600">{s.key}</p>
+                <p className="text-sm text-slate-600">
+                  Edit the collaboration landing page with the visual editor.
+                </p>
+                <Link href="/admin/collaboration/landing/" className="admin-link mt-2 inline-block text-sm">
+                  Open collaboration landing editor →
+                </Link>
+              </div>
+            );
+          }
+
+          return (
+            <div key={s.key} className="admin-card p-5">
+              <p className="mb-2 font-mono text-sm text-slate-600">{s.key}</p>
+              {s.description && <p className="mb-3 text-xs text-slate-500">{s.description}</p>}
+              <AdminForm action={updateSiteSettingAction.bind(null, s.key)}>
+                <AdminSiteSettingField settingKey={s.key} value={s.value} />
+                <AdminSubmit />
+              </AdminForm>
+            </div>
+          );
+        })}
       </section>
 
       <section className="space-y-4">
@@ -63,7 +75,7 @@ export default async function AdminSettingsPage() {
           </div>
         ))}
         <div className="admin-card border-dashed p-5">
-          <p className="mb-3 text-sm text-zinc-400">Add social link</p>
+          <p className="mb-3 text-sm text-slate-500">Add social link</p>
           <AdminForm action={saveSocialLinkAction.bind(null, null)}>
             <div className="grid gap-4 md:grid-cols-2">
               <AdminInput label="Platform" name="platform" required />

@@ -9,7 +9,7 @@ const bodySchema = z.object({
   amountPaise: z.number().int().min(100).optional(),
   donorName: z.string().min(2),
   email: z.string().email(),
-  phone: z.string().min(10),
+  phone: z.string().optional(),
   organization: z.string().optional(),
   country: z.string().optional(),
   state: z.string().optional(),
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     tier_id: tierId,
     donor_name: body.donorName,
     email: body.email,
-    phone: body.phone,
+    phone: body.phone?.replace(/\D/g, "").slice(-10) || null,
     organization: body.organization,
     country: body.country,
     state: body.state,
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       merchantTransactionId,
       amountPaise,
       userId: body.email,
-      mobileNumber: body.phone,
+      mobileNumber: body.phone?.replace(/\D/g, "").slice(-10) || "9999999999",
     });
     return NextResponse.json({ redirectUrl: payment.redirectUrl, merchantTransactionId });
   } catch (e) {

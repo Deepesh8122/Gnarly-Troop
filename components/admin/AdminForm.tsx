@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import type { ActionResult } from "@/lib/admin/actions";
 import AdminSubmitButton from "@/components/admin/AdminSubmitButton";
+import {
+  passwordManagerIgnoreAttrs,
+  passwordManagerIgnoreFormAttrs,
+} from "@/lib/admin/form-attrs";
 
 const inputClass = "admin-input";
 const labelClass = "mb-1.5 block text-sm font-medium text-slate-700";
@@ -17,7 +21,7 @@ export function AdminField({
   hint?: string;
 }) {
   return (
-    <div>
+    <div suppressHydrationWarning>
       <label className={labelClass} htmlFor={name}>
         {label}
       </label>
@@ -31,7 +35,9 @@ export function AdminInput(
   props: React.InputHTMLAttributes<HTMLInputElement> & { label?: string },
 ) {
   const { label, className, ...rest } = props;
-  const el = <input className={`${inputClass} ${className ?? ""}`} {...rest} />;
+  const el = (
+    <input className={`${inputClass} ${className ?? ""}`} {...rest} {...passwordManagerIgnoreAttrs} />
+  );
   if (!label) return el;
   return (
     <AdminField label={label} name={rest.name}>
@@ -48,6 +54,7 @@ export function AdminTextarea(
     <textarea
       className={`${inputClass} min-h-[120px] font-mono text-xs ${className ?? ""}`}
       {...rest}
+      {...passwordManagerIgnoreAttrs}
     />
   );
   if (!label) return el;
@@ -67,7 +74,7 @@ export function AdminSelect(
   const { label, options, className, ...rest } = props;
   return (
     <AdminField label={label} name={rest.name}>
-      <select className={`${inputClass} ${className ?? ""}`} {...rest}>
+      <select className={`${inputClass} ${className ?? ""}`} {...rest} {...passwordManagerIgnoreAttrs}>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
@@ -94,6 +101,7 @@ export function AdminCheckbox({
         name={name}
         defaultChecked={defaultChecked}
         className="rounded border-slate-300 text-teal-600"
+        {...passwordManagerIgnoreAttrs}
       />
       {label}
     </label>
@@ -111,7 +119,11 @@ export function AdminForm({
   className?: string;
 }) {
   return (
-    <form action={action} className={`space-y-5 ${className ?? ""}`}>
+    <form
+      action={action}
+      className={`space-y-5 ${className ?? ""}`}
+      {...passwordManagerIgnoreFormAttrs}
+    >
       {children}
     </form>
   );

@@ -1,6 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import styles from "./DonationForm.module.css";
+import { passwordManagerIgnoreFormAttrs, passwordManagerIgnoreAttrs } from "@/lib/admin/form-attrs";
 
 type Tier = {
   id: string;
@@ -15,28 +17,53 @@ type Props = {
   phonePeReady: boolean;
 };
 
+const CUSTOM_SLUG = "custom";
+
 export default function DonationForm({ tiers, phonePeReady }: Props) {
-  const [tierSlug, setTierSlug] = useState(tiers[0]?.slug ?? "");
+  const [selected, setSelected] = useState(tiers[0]?.slug ?? CUSTOM_SLUG);
+  const [customRupees, setCustomRupees] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedTier = tiers.find((t) => t.slug === selected);
+  const isCustom = selected === CUSTOM_SLUG;
+
+  const displayAmount = useMemo(() => {
+    if (isCustom) {
+      const n = Number(customRupees);
+      return Number.isFinite(n) && n > 0 ? n : null;
+    }
+    return selectedTier ? selectedTier.amount_paise / 100 : null;
+  }, [isCustom, customRupees, selectedTier]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
+    if (isCustom) {
+      const rupees = Number(customRupees);
+      if (!Number.isFinite(rupees) || rupees < 100) {
+        setError("Please enter an amount of at least Rs. 100.");
+        return;
+      }
+    } else if (!selectedTier) {
+      setError("Please select a donation amount.");
+      return;
+    }
+
+    setLoading(true);
     const fd = new FormData(e.currentTarget);
-    const payload = {
-      tierSlug: tierSlug || undefined,
+
+    const payload: Record<string, unknown> = {
       donorName: String(fd.get("donorName")),
       email: String(fd.get("email")),
-      phone: String(fd.get("phone")),
-      organization: String(fd.get("organization") || ""),
-      country: String(fd.get("country") || "India"),
-      state: String(fd.get("state") || ""),
-      district: String(fd.get("district") || ""),
-      pinCode: String(fd.get("pinCode") || ""),
     };
+
+    if (isCustom) {
+      payload.amountPaise = Math.round(Number(customRupees) * 100);
+    } else if (selectedTier) {
+      payload.tierSlug = selectedTier.slug;
+    }
 
     try {
       const res = await fetch("/api/donations/phonepe/initiate/", {
@@ -58,77 +85,109 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
   }
 
   return (
-    <form className="donation-form" onSubmit={onSubmit}>
-      {tiers.length > 0 && (
-        <fieldset className="tier-fieldset">
-          <legend>Choose amount</legend>
-          {tiers.map((t) => (
-            <label key={t.id} className="tier-option">
-              <input
-                type="radio"
-                name="tier"
-                value={t.slug}
-                checked={tierSlug === t.slug}
-                onChange={() => setTierSlug(t.slug)}
-              />
-              <span>
-                <strong>{t.title}</strong> — ₹{(t.amount_paise / 100).toLocaleString("en-IN")}
-                {t.description && <small>{t.description}</small>}
-              </span>
+    <form className={styles.form} onSubmit={onSubmit} {...passwordManagerIgnoreFormAttrs}>
+      <section className={styles.amountSection}>
+        <h2 className={styles.sectionTitle}>Choose amount</h2>
+
+        <div className={styles.tierGrid}>
+          {tiers.map((t) => {
+            const active = selected === t.slug;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                className={`${styles.tierCard} ${active ? styles.tierCardActive : ""}`}
+                onClick={() => setSelected(t.slug)}
+              >
+                <span className={styles.tierAmount}>
+                  Rs. {(t.amount_paise / 100).toLocaleString("en-IN")}
+                </span>
+                <span className={styles.tierTitle}>{t.title}</span>
+                {t.description && <span className={styles.tierDesc}>{t.description}</span>}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            className={`${styles.tierCard} ${isCustom ? styles.tierCardActive : ""}`}
+            onClick={() => setSelected(CUSTOM_SLUG)}
+          >
+            <span className={styles.tierAmount}>Custom</span>
+            <span className={styles.tierTitle}>Other amount</span>
+            <span className={styles.tierDesc}>From Rs. 100</span>
+          </button>
+        </div>
+
+        {isCustom && (
+          <div className={styles.customWrap}>
+            <label className={styles.customLabel}>
+              Enter amount (INR)
+              <div className={styles.customInputRow}>
+                <span className={styles.rupee}>Rs.</span>
+                <input
+                  type="number"
+                  min={100}
+                  step={1}
+                  value={customRupees}
+                  onChange={(e) => setCustomRupees(e.target.value)}
+                  placeholder="e.g. 2500"
+                  className={styles.customInput}
+                  required={isCustom}
+                />
+              </div>
             </label>
-          ))}
-        </fieldset>
+          </div>
+        )}
+
+        {displayAmount != null && (
+          <p className={styles.selectedSummary}>
+            Amount: <strong>Rs. {displayAmount.toLocaleString("en-IN")}</strong>
+          </p>
+        )}
+      </section>
+
+      <section className={styles.detailsSection}>
+        <h2 className={styles.sectionTitle}>Your details</h2>
+        <p className={styles.sectionLead}>
+          Used for your acknowledgement PDF and email. Payment happens on PhonePe (QR / UPI).
+        </p>
+
+        <label className={styles.field}>
+          Full name *
+          <input name="donorName" required {...passwordManagerIgnoreAttrs} autoComplete="name" />
+        </label>
+        <label className={styles.field}>
+          Email *
+          <input name="email" type="email" required {...passwordManagerIgnoreAttrs} autoComplete="email" />
+        </label>
+      </section>
+
+      {error && <p className={styles.error}>{error}</p>}
+
+      {!phonePeReady && (
+        <p className={styles.warn}>
+          Payment gateway is being configured. Contact president@gnarlytroop.org if payment does
+          not start.
+        </p>
       )}
 
-      <label>
-        Full name *
-        <input name="donorName" required />
-      </label>
-      <label>
-        Email *
-        <input name="email" type="email" required />
-      </label>
-      <label>
-        Mobile (PhonePe) *
-        <input name="phone" type="tel" required pattern="[0-9]{10,15}" placeholder="10-digit mobile" />
-      </label>
-      <label>
-        Organization
-        <input name="organization" />
-      </label>
-      <div className="donation-row">
-        <label>
-          State
-          <input name="state" />
-        </label>
-        <label>
-          District
-          <input name="district" />
-        </label>
-      </div>
-      <label>
-        PIN
-        <input name="pinCode" />
-      </label>
-
-      {error && <p className="donation-error">{error}</p>}
-
-      <button type="submit" disabled={loading || !phonePeReady} className="donation-submit">
-        {loading ? "Redirecting to PhonePe…" : "Pay with PhonePe"}
+      <button type="submit" disabled={loading || !phonePeReady} className={styles.submit}>
+        {loading ? (
+          "Opening PhonePe…"
+        ) : (
+          <>
+            <span className={styles.phonepeBadge}>PhonePe</span>
+            Pay
+            {displayAmount != null ? ` Rs. ${displayAmount.toLocaleString("en-IN")}` : ""} — QR / UPI
+          </>
+        )}
       </button>
 
-      <style>{`
-        .donation-form { display: flex; flex-direction: column; gap: 14px; }
-        .donation-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; font-weight: 600; }
-        .donation-form input { padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
-        .tier-fieldset { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
-        .tier-option { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; cursor: pointer; }
-        .tier-option small { display: block; color: #666; font-weight: 400; }
-        .donation-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .donation-submit { margin-top: 8px; padding: 14px; background: #5f259f; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; }
-        .donation-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-        .donation-error { color: #c00; font-size: 0.9rem; }
-      `}</style>
+      <p className={styles.secureNote}>
+        You will be redirected to PhonePe to scan a QR code or pay with any UPI app. A PDF
+        acknowledgement will be emailed after successful payment.
+      </p>
     </form>
   );
 }

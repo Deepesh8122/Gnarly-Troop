@@ -12,6 +12,7 @@ const NAV = [
   { label: "Team Categories", href: "/admin/leadership/categories/", icon: "🏷" },
   { label: "Collaboration", href: "/admin/collaboration/", icon: "🤝" },
   { label: "Events", href: "/admin/events/", icon: "📅" },
+  { label: "Registrations", href: "/admin/registrations/", icon: "🎫" },
   { label: "Gallery", href: "/admin/gallery/", icon: "🖼" },
   { label: "Media", href: "/admin/media/", icon: "📁" },
   { label: "Menus", href: "/admin/menus/", icon: "☰" },

@@ -10,7 +10,7 @@ export type PhonePePayRequest = {
   merchantTransactionId: string;
   amountPaise: number;
   userId: string;
-  mobileNumber: string;
+  mobileNumber?: string;
 };
 
 export function getPhonePeConfig() {
@@ -58,7 +58,7 @@ export async function createPhonePePayment(req: PhonePePayRequest): Promise<{
     redirectUrl: `${siteUrl}/collaboration/donation/status/?id=${req.merchantTransactionId}`,
     redirectMode: "REDIRECT",
     callbackUrl: `${siteUrl}/api/donations/phonepe/callback/`,
-    mobileNumber: req.mobileNumber.replace(/\D/g, "").slice(-10),
+    mobileNumber: (req.mobileNumber ?? "9999999999").replace(/\D/g, "").slice(-10),
     paymentInstrument: { type: "PAY_PAGE" },
   };
 

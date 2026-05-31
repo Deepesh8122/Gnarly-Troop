@@ -4,8 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { getSupabaseEnv } from "@/lib/env";
-import { migrateStaticContentToSupabase } from "@/lib/admin/migrate-static";
-import { revalidatePublicPaths } from "@/lib/admin/revalidate";
+import { migrateStaticContentToSupabase, seedHomepageSectionContent } from "@/lib/admin/migrate-static";
+import {
+  buildCollaborationDetail,
+  buildCollaborationLanding,
+  buildSectionContent,
+} from "@/lib/admin/form-builders";
+import {
+  revalidateCmsPageSlug,
+  revalidatePublicPaths,
+} from "@/lib/admin/revalidate";
 import { slugify } from "@/lib/utils/slug";
 import { isAllowedTeamCategorySlug } from "@/lib/team-categories";
 
@@ -31,7 +39,84 @@ export async function migrateStaticAction(): Promise<ActionResult> {
   }
 }
 
+export async function seedHomepageSectionsAction(): Promise<ActionResult> {
+  try {
+    const supabase = adminClient();
+    const warnings = await seedHomepageSectionContent(supabase);
+    revalidatePublicPaths();
+    return {
+      ok: true,
+      error: warnings.length ? warnings.join("; ") : undefined,
+    };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Seed failed" };
+  }
+}
+
 // ——— Pages ———
+export async function createPageAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const supabase = adminClient();
+    const title = String(formData.get("title") ?? "").trim();
+    const slug =
+      String(formData.get("slug") ?? "").trim() || slugify(title);
+    const status = String(formData.get("status") ?? "draft");
+    const bodyHtml = String(formData.get("body_html") ?? "").trim();
+
+    const { data: page, error } = await supabase
+      .from("pages")
+      .insert({
+        title,
+        slug,
+        status,
+        is_home: false,
+        published_at: status === "published" ? new Date().toISOString() : null,
+      })
+      .select("id")
+      .single();
+
+    if (error) throw error;
+
+    if (bodyHtml) {
+      await supabase.from("page_sections").insert({
+        page_id: page.id,
+        section_type: "custom_html",
+        title: "Page content",
+        sort_order: 10,
+        is_enabled: true,
+        content: { body_html: bodyHtml, html: bodyHtml, body: bodyHtml },
+      });
+    }
+
+    revalidatePublicPaths();
+    revalidateCmsPageSlug(slug);
+    revalidatePath("/admin/pages");
+    redirect(`/admin/pages/${page.id}/`);
+  } catch (e) {
+    if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
+    return { ok: false, error: e instanceof Error ? e.message : "Create failed" };
+  }
+}
+
+export async function addPageSectionFormAction(
+  pageId: string,
+  formData: FormData,
+): Promise<void> {
+  const supabase = adminClient();
+  const sectionType = String(formData.get("section_type") ?? "custom_html");
+  const { error } = await supabase.from("page_sections").insert({
+    page_id: pageId,
+    section_type: sectionType,
+    title: String(formData.get("title") ?? "Page content"),
+    sort_order: Number(formData.get("sort_order") ?? 10),
+    is_enabled: true,
+    content: {},
+  });
+  if (error) throw new Error(error.message);
+  revalidatePublicPaths();
+  revalidatePath(`/admin/pages/${pageId}`);
+}
+
 export async function updatePageAction(
   id: string,
   formData: FormData,
@@ -53,6 +138,7 @@ export async function updatePageAction(
     if (error) throw error;
     revalidatePublicPaths();
     revalidatePath(`/admin/pages/${id}`);
+    revalidateCmsPageSlug(String(formData.get("slug") ?? ""));
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Update failed" };
@@ -65,18 +151,29 @@ export async function updatePageSectionAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
-    let content: Record<string, unknown> = {};
-    const raw = String(formData.get("content") ?? "{}");
-    try {
-      content = JSON.parse(raw) as Record<string, unknown>;
-    } catch {
-      return { ok: false, error: "Invalid JSON in section content" };
+    const sectionType = String(formData.get("section_type") ?? "");
+    if (!sectionType) {
+      const { data: row } = await supabase
+        .from("page_sections")
+        .select("section_type")
+        .eq("id", sectionId)
+        .maybeSingle();
+      if (!row?.section_type) {
+        return { ok: false, error: "Section type missing" };
+      }
+      formData.set("section_type", row.section_type);
     }
 
-    const bodyHtml = String(formData.get("body_html") ?? "").trim();
-    if (bodyHtml) {
-      content = { ...content, body_html: bodyHtml, html: bodyHtml, body: bodyHtml };
-    }
+    const { data: sectionMeta } = await supabase
+      .from("page_sections")
+      .select("pages(slug)")
+      .eq("id", sectionId)
+      .maybeSingle();
+
+    const content = buildSectionContent(
+      String(formData.get("section_type")),
+      formData,
+    );
 
     const { error } = await supabase
       .from("page_sections")
@@ -91,6 +188,9 @@ export async function updatePageSectionAction(
 
     if (error) throw error;
     revalidatePublicPaths();
+    revalidateCmsPageSlug(
+      (sectionMeta?.pages as { slug?: string } | null)?.slug,
+    );
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Update failed" };
@@ -441,12 +541,24 @@ export async function saveCollaborationPartnerAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
-    let detailContent: Record<string, unknown> = {};
-    try {
-      detailContent = JSON.parse(String(formData.get("detail_content") ?? "{}"));
-    } catch {
-      return { ok: false, error: "Invalid detail content JSON" };
+    let existingDetail: Record<string, unknown> = {};
+    if (id) {
+      const { data: existing } = await supabase
+        .from("collaboration_partners")
+        .select("detail_content")
+        .eq("id", id)
+        .maybeSingle();
+      existingDetail = (existing?.detail_content as Record<string, unknown>) ?? {};
     }
+
+    const built = buildCollaborationDetail(formData);
+    const detailContent: Record<string, unknown> = {
+      ...existingDetail,
+      ...built,
+      title: String(formData.get("name") ?? ""),
+      slug:
+        String(formData.get("slug") ?? "") || slugify(String(formData.get("name") ?? "")),
+    };
 
     const payload = {
       category_id: String(formData.get("category_id") ?? "") || null,
@@ -503,12 +615,7 @@ export async function saveCollaborationLandingAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
-    let value: unknown;
-    try {
-      value = JSON.parse(String(formData.get("landing") ?? "{}"));
-    } catch {
-      return { ok: false, error: "Invalid landing JSON" };
-    }
+    const value = buildCollaborationLanding(formData);
 
     const { error } = await supabase.from("site_settings").upsert(
       {
@@ -613,11 +720,19 @@ export async function updateSiteSettingAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
-    let value: unknown;
-    try {
-      value = JSON.parse(String(formData.get("value") ?? '""'));
-    } catch {
-      return { ok: false, error: "Value must be valid JSON" };
+    const raw = String(formData.get("value_text") ?? "").trim();
+
+    let value: unknown = raw;
+    if (key === "brochure_gate_enabled") {
+      value = formData.get("value_text") === "on";
+    } else if (raw === "true") {
+      value = true;
+    } else if (raw === "false") {
+      value = false;
+    } else if (raw !== "" && !Number.isNaN(Number(raw)) && /^-?\d+(\.\d+)?$/.test(raw)) {
+      value = Number(raw);
+    } else {
+      value = raw.replace(/^"|"$/g, "");
     }
 
     const { error } = await supabase
@@ -721,6 +836,115 @@ export async function deleteMenuItemAction(menuId: string, itemId: string): Prom
   if (error) throw new Error(error.message);
   revalidatePublicPaths();
   redirect(`/admin/menus/${menuId}/`);
+}
+
+// ——— Vision (4C) ———
+export async function saveVisionPillarAction(
+  id: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const supabase = adminClient();
+    const coverMediaId =
+      String(formData.get("cover_media_id") ?? formData.get("pillar_media_id") ?? "") || null;
+
+    const { error } = await supabase
+      .from("vision_items")
+      .update({
+        title: String(formData.get("title") ?? ""),
+        subtitle: String(formData.get("subtitle") ?? "") || null,
+        short_description: String(formData.get("short_description") ?? "") || null,
+        cover_media_id: coverMediaId,
+        status: String(formData.get("status") ?? "published"),
+        is_enabled: formData.get("is_enabled") === "on",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) throw error;
+    revalidatePublicPaths();
+    revalidatePath("/4cvision", "layout");
+    revalidatePath(`/admin/vision/${id}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Update failed" };
+  }
+}
+
+export async function saveVisionBlockAction(
+  pillarId: string,
+  blockId: string | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const supabase = adminClient();
+    const payload = {
+      vision_item_id: pillarId,
+      slug:
+        String(formData.get("slug") ?? "") ||
+        slugify(String(formData.get("title") ?? "story")),
+      block_type: String(formData.get("block_type") ?? "story"),
+      title: String(formData.get("title") ?? "") || null,
+      excerpt: String(formData.get("excerpt") ?? "") || null,
+      body: String(formData.get("body") ?? "") || null,
+      author: String(formData.get("author") ?? "") || null,
+      read_time: formData.get("read_time") ? Number(formData.get("read_time")) : null,
+      image_media_id:
+        String(formData.get("block_media_id") ?? formData.get("image_media_id") ?? "") || null,
+      legacy_image_path:
+        String(formData.get("block_legacy_path") ?? formData.get("legacy_image_path") ?? "") ||
+        null,
+      sort_order: Number(formData.get("sort_order") ?? 0),
+      is_enabled: formData.get("is_enabled") === "on",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (blockId) {
+      const { error } = await supabase.from("vision_item_blocks").update(payload).eq("id", blockId);
+      if (error) throw error;
+      revalidatePath(`/admin/vision/${pillarId}/blocks/${blockId}`);
+    } else {
+      const { data, error } = await supabase
+        .from("vision_item_blocks")
+        .insert(payload)
+        .select("id")
+        .single();
+      if (error) throw error;
+      revalidatePublicPaths();
+      revalidatePath("/4cvision", "layout");
+      redirect(`/admin/vision/${pillarId}/blocks/${data!.id}/`);
+    }
+
+    revalidatePublicPaths();
+    revalidatePath("/4cvision", "layout");
+    revalidatePath(`/admin/vision/${pillarId}`);
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
+    return { ok: false, error: e instanceof Error ? e.message : "Save failed" };
+  }
+}
+
+export async function deleteVisionBlockAction(pillarId: string, blockId: string): Promise<void> {
+  const supabase = adminClient();
+  const { error } = await supabase.from("vision_item_blocks").delete().eq("id", blockId);
+  if (error) throw new Error(error.message);
+  revalidatePublicPaths();
+  revalidatePath("/4cvision", "layout");
+  redirect(`/admin/vision/${pillarId}/`);
+}
+
+export async function deleteVisionBlockForPillarFormAction(
+  pillarId: string,
+  formData: FormData,
+): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing block id");
+  const supabase = adminClient();
+  const { error } = await supabase.from("vision_item_blocks").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePublicPaths();
+  revalidatePath("/4cvision", "layout");
+  revalidatePath(`/admin/vision/${pillarId}`);
 }
 
 export async function toggleMenuItemEnabledAction(

@@ -6,3 +6,4 @@ export * from "./services/pages.service";
 export * from "./services/leadership.service";
 export * from "./services/collaboration.service";
 export * from "./cms/section-data-loaders";
+export * from "./cms/homepage-defaults";

@@ -4,13 +4,18 @@ import AdminDataTable, { type AdminTableColumn } from "@/components/admin/AdminD
 import { AdminPageHeader } from "@/components/admin/AdminForm";
 import {
   deleteTeamCategoryFormAction,
-  moveTeamCategoryFormAction,
 } from "@/lib/admin/actions";
 import { getAdminTeamCategoriesWithCounts } from "@/lib/admin/data";
 
 const columns: AdminTableColumn[] = [
   { key: "sort_order", header: "#" },
-  { key: "name", header: "Category" },
+  {
+    key: "name",
+    header: "Category",
+    format: "link",
+    linkPattern: "/admin/leadership/categories/{id}/",
+    linkLabelKey: "name",
+  },
   { key: "slug", header: "Slug", format: "mono" },
   { key: "display_style", header: "Layout", format: "badge" },
   { key: "member_count", header: "Members" },
@@ -62,36 +67,6 @@ export default async function AdminTeamCategoriesPage() {
           deleteEntityLabel="this category"
           defaultPageSize={25}
         />
-        {categories.length > 0 && (
-          <ul className="mt-4 space-y-2 rounded-lg border border-slate-200 bg-white p-4 text-sm">
-            {categories.map((c) => (
-              <li
-                key={c.id}
-                className="flex flex-wrap items-center gap-3 border-b border-slate-100 pb-2 last:border-0"
-              >
-                <span className="font-medium text-slate-800">{c.name}</span>
-                <span className="text-xs text-slate-500">{c.member_count} members</span>
-                <form action={moveTeamCategoryFormAction}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <input type="hidden" name="direction" value="up" />
-                  <button type="submit" className="admin-link text-xs">
-                    ↑ Move up
-                  </button>
-                </form>
-                <form action={moveTeamCategoryFormAction}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <input type="hidden" name="direction" value="down" />
-                  <button type="submit" className="admin-link text-xs">
-                    ↓ Move down
-                  </button>
-                </form>
-                <Link href={`/admin/leadership/categories/${c.id}/`} className="admin-link text-xs">
-                  Edit
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
     </div>
   );

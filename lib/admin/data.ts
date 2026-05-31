@@ -86,12 +86,14 @@ export async function getAdminEvents() {
   return data ?? [];
 }
 
-export async function getAdminEventRegistrations(limit = 50) {
+export async function getAdminEventRegistrations(limit = 200) {
   const supabase = adminDb();
   if (!supabase) return [];
   const { data } = await supabase
     .from("event_registrations")
-    .select("id, full_name, email, phone, status, created_at, events(title)")
+    .select(
+      "id, full_name, email, phone, organization, designation, eligibility, country, state, city, status, created_at, events(title, slug)",
+    )
     .order("created_at", { ascending: false })
     .limit(limit);
   return data ?? [];
@@ -318,4 +320,30 @@ export async function getAdminGallery(id: string) {
 
 export async function getAdminMediaList() {
   return getAdminMedia(200);
+}
+
+export async function getAdminVisionPillar(id: string) {
+  const supabase = adminDb();
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("vision_items")
+    .select(
+      "*, cover:media_library!vision_items_cover_media_id_fkey(id, bucket, storage_path)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  return data;
+}
+
+export async function getAdminVisionBlock(blockId: string) {
+  const supabase = adminDb();
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("vision_item_blocks")
+    .select(
+      "*, image:media_library!vision_item_blocks_image_media_id_fkey(id, bucket, storage_path)",
+    )
+    .eq("id", blockId)
+    .maybeSingle();
+  return data;
 }

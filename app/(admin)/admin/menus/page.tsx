@@ -75,7 +75,7 @@ export default async function AdminMenusPage() {
 
         title="Navigation menus"
 
-        description="Control header and footer links. Changes appear on the live site after save."
+        description="Control header and footer links. Footer uses “Footer Quick Links” — link to CMS pages or custom URLs."
 
       />
 

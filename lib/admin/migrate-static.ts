@@ -4,6 +4,7 @@ import {
   collaborationInitiatives,
   collaborationLanding,
 } from "@/src/data/collaborationData";
+import { HOMEPAGE_SECTION_DEFAULTS } from "@gnarly/lib";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { TEAM_CATEGORIES } from "@/lib/team-categories";
 
@@ -204,9 +205,12 @@ export async function migrateStaticContentToSupabase(): Promise<{
   const visionWarnings = await importVisionStories(supabase);
   warnings.push(...visionWarnings);
 
+  const homepageWarnings = await seedHomepageSectionContent(supabase);
+  warnings.push(...homepageWarnings);
+
   return {
     ok: true,
-    message: `Imported ${members} team members, ${partners} partners, landing content, and 4C vision stories.`,
+    message: `Imported ${members} team members, ${partners} partners, homepage section defaults, landing content, and 4C vision stories.`,
     counts: { members, partners },
     warnings: warnings.length ? warnings : undefined,
   };
@@ -276,6 +280,54 @@ async function importVisionStories(
       if (error) {
         warnings.push(`vision block ${pillarSlug}/${r.slug}: ${error.message}`);
       }
+    }
+  }
+
+  return warnings;
+}
+
+/** Populate empty homepage section JSON from site defaults so admin editors show content. */
+export async function seedHomepageSectionContent(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+): Promise<string[]> {
+  const warnings: string[] = [];
+
+  const { data: homePage } = await supabase
+    .from("pages")
+    .select("id")
+    .eq("slug", "home")
+    .maybeSingle();
+
+  if (!homePage) {
+    warnings.push("Home page not found — run supabase/seed.sql first.");
+    return warnings;
+  }
+
+  const { data: sections } = await supabase
+    .from("page_sections")
+    .select("id, section_type, content")
+    .eq("page_id", homePage.id);
+
+  for (const section of sections ?? []) {
+    const defaults =
+      HOMEPAGE_SECTION_DEFAULTS[section.section_type as keyof typeof HOMEPAGE_SECTION_DEFAULTS];
+    if (!defaults) continue;
+
+    const current = (section.content as Record<string, unknown>) ?? {};
+    const isEmpty = !current || Object.keys(current).length === 0;
+
+    if (!isEmpty) continue;
+
+    const { error } = await supabase
+      .from("page_sections")
+      .update({
+        content: defaults,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", section.id);
+
+    if (error) {
+      warnings.push(`page_sections ${section.section_type}: ${error.message}`);
     }
   }
 

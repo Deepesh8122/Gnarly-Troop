@@ -198,26 +198,6 @@ export default function MediaPicker({
         </button>
       </div>
 
-      <div className="mt-3">
-        <label className="mb-1 block text-xs text-slate-500">
-          Or image URL path (e.g. /images/…)
-        </label>
-        <input
-          type="text"
-          className="admin-input"
-          value={legacyPath}
-          onChange={(e) => {
-            const val = e.target.value;
-            setLegacyPath(val);
-            setPreview(val.startsWith("/") || val.startsWith("http") ? val : val ? `/${val}` : "");
-            setMediaId("");
-            setMimeType(null);
-            setMediaKind(null);
-          }}
-          placeholder="/images/leadership/photo.jpg"
-        />
-      </div>
-
       {mediaId && (
         <p className="mt-2 text-xs text-slate-500">
           Media ID: <code className="rounded bg-slate-100 px-1">{mediaId}</code>

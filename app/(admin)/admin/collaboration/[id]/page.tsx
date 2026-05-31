@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminNotConfigured from "@/components/admin/AdminNotConfigured";
+import AdminCollaborationDetailEditor from "@/components/admin/AdminCollaborationDetailEditor";
 import AdminRichTextEditor from "@/components/admin/AdminRichTextEditor";
 import { AdminDeleteForm } from "@/components/admin/AdminConfirmDelete";
 import {
@@ -10,7 +11,6 @@ import {
   AdminPageHeader,
   AdminSelect,
   AdminSubmit,
-  AdminTextarea,
 } from "@/components/admin/AdminForm";
 import {
   getAdminCollaborationCategories,
@@ -22,6 +22,7 @@ import {
 } from "@/lib/admin/actions";
 import MediaPicker from "@/components/admin/MediaPicker";
 import AdminSlugField from "@/components/admin/AdminSlugField";
+import type { CollaborationDetail } from "@/src/data/collaborationData";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -33,7 +34,7 @@ export default async function AdminCollaborationEditPage({ params }: Params) {
   ]);
   if (!partner) notFound();
 
-  const detailJson = JSON.stringify(partner.detail_content ?? {}, null, 2);
+  const detail = (partner.detail_content ?? {}) as Partial<CollaborationDetail>;
 
   return (
     <div className="space-y-6">
@@ -114,16 +115,16 @@ export default async function AdminCollaborationEditPage({ params }: Params) {
           />
           <AdminRichTextEditor
             name="description_html"
-            label="Full description"
+            label="Listing description"
             defaultValue={partner.description_html ?? ""}
             bucket="partners"
           />
-          <AdminTextarea
-            label="Detail page content (JSON — advanced)"
-            name="detail_content"
-            defaultValue={detailJson}
-            rows={12}
-          />
+
+          <div className="my-8 border-t border-slate-200 pt-8">
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">Detail page content</h3>
+            <AdminCollaborationDetailEditor detail={detail} partnerName={partner.name} />
+          </div>
+
           <AdminCheckbox name="is_enabled" label="Show on website" defaultChecked={partner.is_enabled} />
           <AdminSubmit />
         </AdminForm>
@@ -138,3 +139,4 @@ export default async function AdminCollaborationEditPage({ params }: Params) {
     </div>
   );
 }
+

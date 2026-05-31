@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { slugify } from "@/lib/utils/slug";
+import { passwordManagerIgnoreAttrs } from "@/lib/admin/form-attrs";
 
 type Props = {
   nameLabel: string;
@@ -43,6 +44,7 @@ export default function AdminSlugField({
           placeholder={namePlaceholder}
           required={required}
           className="admin-input"
+          {...passwordManagerIgnoreAttrs}
           onChange={(e) => {
             if (!manual) setSlug(slugify(e.target.value));
           }}
@@ -56,6 +58,7 @@ export default function AdminSlugField({
           value={slug}
           required={required}
           className="admin-input font-mono text-sm"
+          {...passwordManagerIgnoreAttrs}
           onChange={(e) => {
             setManual(true);
             setSlug(slugify(e.target.value));

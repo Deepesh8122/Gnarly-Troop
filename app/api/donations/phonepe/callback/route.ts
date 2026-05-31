@@ -43,6 +43,11 @@ export async function POST(request: Request) {
       })
       .eq("merchant_transaction_id", merchantTransactionId);
 
+    if (success) {
+      const { fulfillSuccessfulDonation } = await import("@/lib/donations/fulfill-donation");
+      await fulfillSuccessfulDonation(merchantTransactionId);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("[PhonePe callback]", e);

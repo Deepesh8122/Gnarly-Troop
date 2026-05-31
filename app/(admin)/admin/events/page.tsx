@@ -5,6 +5,7 @@ import { AdminPageHeader } from "@/components/admin/AdminForm";
 import { deleteEventFormAction } from "@/lib/admin/actions";
 import { getAdminEventRegistrations, getAdminEvents } from "@/lib/admin/data";
 import { mapEventsTableRows } from "@/lib/admin/table-rows";
+import { eligibilityLabel } from "@/lib/registration/constants";
 
 const eventColumns: AdminTableColumn[] = [
   { key: "thumbUrl", header: "", format: "thumb", sortable: false },
@@ -23,6 +24,7 @@ const eventColumns: AdminTableColumn[] = [
 const regColumns: AdminTableColumn[] = [
   { key: "full_name", header: "Name" },
   { key: "email", header: "Email" },
+  { key: "eligibility_label", header: "Eligibility" },
   { key: "event_title", header: "Event" },
   { key: "created_at", header: "Registered", format: "date" },
   { key: "status", header: "Status" },
@@ -39,6 +41,7 @@ export default async function AdminEventsPage() {
     id: r.id,
     full_name: r.full_name,
     email: r.email,
+    eligibility_label: eligibilityLabel(r.eligibility as string | null),
     event_title: (r.events as { title?: string } | null)?.title ?? "—",
     created_at: r.created_at,
     status: r.status,
@@ -51,9 +54,14 @@ export default async function AdminEventsPage() {
         title="Events"
         description="Create and edit summits and programs."
         actions={
-          <Link href="/admin/events/new/" className="admin-btn-primary">
-            + New event
-          </Link>
+          <>
+            <Link href="/admin/registrations/" className="admin-btn-secondary text-sm">
+              All registrations
+            </Link>
+            <Link href="/admin/events/new/" className="admin-btn-primary">
+              + New event
+            </Link>
+          </>
         }
       />
       <AdminDataTable
