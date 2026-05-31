@@ -4,11 +4,13 @@ import {
   checkPhonePeStatus,
   getPhonePeTransactionId,
   isPhonePePaymentSuccessful,
+  verifyPhonePeCallback,
   verifyPhonePeWebhook,
 } from "@/src/lib/phonepe";
 
 type WebhookPayload = {
   event?: string;
+  response?: string;
   payload?: {
     merchantOrderId?: string;
     state?: string;
@@ -18,12 +20,56 @@ type WebhookPayload = {
 
 export async function POST(request: Request) {
   try {
+    const rawBody = await request.text();
+    let body: WebhookPayload = {};
+    try {
+      body = rawBody ? (JSON.parse(rawBody) as WebhookPayload) : {};
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+
+    const base64Response = body.response;
+    const v1Checksum =
+      request.headers.get("x-verify") ?? request.headers.get("X-VERIFY") ?? "";
+
+    if (base64Response) {
+      if (v1Checksum && !verifyPhonePeCallback(base64Response, v1Checksum)) {
+        return NextResponse.json({ error: "Invalid checksum" }, { status: 401 });
+      }
+
+      const decoded = JSON.parse(Buffer.from(base64Response, "base64").toString("utf8"));
+      const merchantTransactionId = decoded?.data?.merchantTransactionId as string | undefined;
+      if (!merchantTransactionId) {
+        return NextResponse.json({ ok: true });
+      }
+
+      const supabase = createServiceRoleClient();
+      const statusRes = await checkPhonePeStatus(merchantTransactionId);
+      const success = isPhonePePaymentSuccessful(statusRes);
+
+      await supabase
+        .from("donations")
+        .update({
+          status: success ? "success" : "failed",
+          phonepe_transaction_id: getPhonePeTransactionId(statusRes),
+          callback_payload: statusRes,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("merchant_transaction_id", merchantTransactionId);
+
+      if (success) {
+        const { fulfillSuccessfulDonation } = await import("@/lib/donations/fulfill-donation");
+        await fulfillSuccessfulDonation(merchantTransactionId);
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
     const authHeader = request.headers.get("authorization");
     if (!verifyPhonePeWebhook(authHeader)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = (await request.json()) as WebhookPayload;
     const merchantTransactionId = body.payload?.merchantOrderId;
     const webhookState = body.payload?.state;
     const event = body.event;

@@ -22,6 +22,17 @@ type Props = {
 
 const CUSTOM_SLUG = "custom";
 
+function paymentReturnOrigin(): string {
+  const { protocol, hostname, port } = window.location;
+  const host = port && port !== "80" && port !== "443" ? `${hostname}:${port}` : hostname;
+  const secure =
+    protocol === "https:" ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".local");
+  return `${secure ? protocol : "https:"}//${host}`;
+}
+
 function DonorDetailsPlaceholder() {
   return (
     <>
@@ -104,7 +115,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
       donorName: String(fd.get("donorName")),
       email: String(fd.get("email")),
       phone: String(fd.get("phone")),
-      returnOrigin: window.location.origin,
+      returnOrigin: paymentReturnOrigin(),
     };
 
     if (isCustom) {
