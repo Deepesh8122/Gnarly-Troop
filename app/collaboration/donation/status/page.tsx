@@ -19,7 +19,9 @@ export default async function DonationStatusPage({ searchParams }: Props) {
     donation = await getDonationByMerchantId(id);
   }
 
-  const success = paymentStatus === "success" || donation?.status === "success";
+  const success =
+    paymentStatus === "success" ||
+    (donation?.status === "success" && Boolean(donation.phonepe_transaction_id));
 
   return (
     <>

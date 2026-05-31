@@ -19,6 +19,17 @@ const COLORS = {
   violetLight: "rgba(124, 58, 237, 0.15)",
 };
 
+function paymentKpiSub(totals: DashboardChartsData["totals"], periodLabel: string) {
+  const parts = [periodLabel];
+  if (totals.donationsPending > 0) {
+    parts.push(`${totals.donationsPending} pending`);
+  }
+  if (totals.donationsFailed > 0) {
+    parts.push(`${totals.donationsFailed} failed`);
+  }
+  return parts.join(" · ");
+}
+
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -296,14 +307,14 @@ export default function AdminDashboardCharts({ data }: Props) {
         <KpiCard
           label="Successful payments"
           value={String(totals.donations)}
-          sub={periodLabel}
+          sub={paymentKpiSub(totals, periodLabel)}
           href="/admin/donors/"
           accent={COLORS.amber}
         />
         <KpiCard
           label="Donation revenue"
           value={formatInr(totals.donationAmountInr)}
-          sub={periodLabel}
+          sub={`Completed payments only · ${periodLabel}`}
           href="/admin/donors/"
           accent={COLORS.blue}
         />

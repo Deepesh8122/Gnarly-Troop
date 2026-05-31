@@ -103,9 +103,82 @@ export function assertSupabaseEnv(): { url: string; anonKey: string } {
   return { url: env.url, anonKey: env.anonKey };
 }
 
-export function getSiteUrl(): string {
+function isLocalHost(hostname: string): boolean {
   return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".local")
   );
+}
+
+function siteUrlFromPlatform(): string | null {
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    return vercel.startsWith("http") ? vercel.replace(/\/$/, "") : `https://${vercel}`;
+  }
+  return null;
+}
+
+function siteUrlFromRequest(request: Request): string | null {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost?.split(",")[0]?.trim() || request.headers.get("host");
+  if (!host) return null;
+
+  const hostname = host.split(":")[0];
+  const proto =
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
+    (isLocalHost(hostname) ? "http" : "https");
+
+  return `${proto}://${host}`.replace(/\/$/, "");
+}
+
+function normalizeOrigin(origin: string | null | undefined): string | null {
+  if (!origin) return null;
+  try {
+    return new URL(origin).origin.replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
+function clientOriginMatchesRequest(request: Request, origin: string): boolean {
+  try {
+    const clientHost = new URL(origin).host;
+    const requestHost =
+      request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
+      request.headers.get("host");
+    if (!requestHost) return false;
+    return clientHost === requestHost;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Public site URL for redirects (PhonePe return URL, auth callbacks).
+ * Always prefers the host the user is actually on (from the incoming request).
+ */
+export function resolveSiteUrl(request?: Request, clientOrigin?: string | null): string {
+  if (request) {
+    const fromRequest = siteUrlFromRequest(request);
+    if (fromRequest) return fromRequest;
+
+    const fromClient = normalizeOrigin(clientOrigin);
+    if (fromClient && clientOriginMatchesRequest(request, fromClient)) {
+      return fromClient;
+    }
+  }
+
+  const envUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    process.env.SITE_URL?.replace(/\/$/, "") ||
+    siteUrlFromPlatform() ||
+    null;
+
+  if (envUrl) return envUrl;
+  return "http://localhost:3000";
+}
+
+export function getSiteUrl(): string {
+  return resolveSiteUrl();
 }

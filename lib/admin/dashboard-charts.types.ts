@@ -14,6 +14,8 @@ export type DashboardChartsData = {
   totals: {
     registrations: number;
     donations: number;
+    donationsPending: number;
+    donationsFailed: number;
     donationAmountInr: number;
     brochureDownloads: number;
   };

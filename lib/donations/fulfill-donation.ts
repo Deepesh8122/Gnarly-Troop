@@ -32,40 +32,44 @@ export async function fulfillSuccessfulDonation(merchantTransactionId: string): 
   const row = donation as DonationRow;
   const amount = (row.amount_paise / 100).toLocaleString("en-IN");
 
-  const pdf = await generateDonationReceiptPdf({
-    donorName: row.donor_name,
-    email: row.email,
-    amountPaise: row.amount_paise,
-    merchantTransactionId: row.merchant_transaction_id,
-    organization: row.organization,
-    state: row.state,
-    district: row.district,
-    createdAt: row.created_at,
-    phonepeTransactionId: row.phonepe_transaction_id,
-  });
+  try {
+    const pdf = await generateDonationReceiptPdf({
+      donorName: row.donor_name,
+      email: row.email,
+      amountPaise: row.amount_paise,
+      merchantTransactionId: row.merchant_transaction_id,
+      organization: row.organization,
+      state: row.state,
+      district: row.district,
+      createdAt: row.created_at,
+      phonepeTransactionId: row.phonepe_transaction_id,
+    });
 
-  const text = [
-    `Dear ${row.donor_name},`,
-    "",
-    `Thank you for donating Rs. ${amount} to Gnarly Troop Global Federation.`,
-    "",
-    "Your payment was successful. Please find your acknowledgement PDF attached.",
-    "",
-    `Reference: ${row.merchant_transaction_id}`,
-    "",
-    "With gratitude,",
-    "Gnarly Troop Global Federation",
-  ].join("\n");
+    const text = [
+      `Dear ${row.donor_name},`,
+      "",
+      `Thank you for donating Rs. ${amount} to Gnarly Troop Global Federation.`,
+      "",
+      "Your payment was successful. Please find your acknowledgement PDF attached.",
+      "",
+      `Reference: ${row.merchant_transaction_id}`,
+      "",
+      "With gratitude,",
+      "Gnarly Troop Global Federation",
+    ].join("\n");
 
-  await sendDonationEmail(
-    row.email,
-    "Thank you for your donation — Gnarly Troop",
-    text,
-    pdf,
-  );
+    await sendDonationEmail(
+      row.email,
+      "Thank you for your donation — Gnarly Troop",
+      text,
+      pdf,
+    );
 
-  await supabase
-    .from("donations")
-    .update({ receipt_sent_at: new Date().toISOString() })
-    .eq("id", row.id);
+    await supabase
+      .from("donations")
+      .update({ receipt_sent_at: new Date().toISOString() })
+      .eq("id", row.id);
+  } catch (error) {
+    console.error("[fulfillSuccessfulDonation] receipt email failed", merchantTransactionId, error);
+  }
 }
