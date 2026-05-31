@@ -1,7 +1,11 @@
-import leadershipData, {
-  LeadershipDataItem,
-  LeadershipSection,
-} from "../data/leadershipData";
+import { getSupabaseEnv } from "@/lib/env";
+import {
+  fetchCmsLeadership,
+  fetchCmsLeadershipMember,
+} from "@/lib/cms/leadership";
+import type { LeadershipSection } from "../data/leadershipData";
+
+export type { LeadershipSection };
 
 export type LeadershipArticle = {
   title: string;
@@ -18,7 +22,9 @@ export type LeadershipItem = {
   alt: string;
   name: string;
   division?: string;
-  section: LeadershipSection;
+  /** Category slug from team_categories */
+  section: string;
+  categoryName?: string;
   region?: string;
   short?: string;
   bio?: string;
@@ -28,62 +34,48 @@ export type LeadershipItem = {
   articles?: LeadershipArticle[];
 };
 
-function imageSrc(image: string): string {
-  if (image.startsWith("/")) return image;
-  return `/images/leadership/${encodeURIComponent(image)}`;
-}
-
-function mapDataItem(d: LeadershipDataItem): LeadershipItem {
-  return {
-    slug: d.slug,
-    src: imageSrc(d.image),
-    filename: d.image,
-    title: d.title,
-    alt: d.name,
-    name: d.name,
-    division: d.division,
-    section: d.section,
-    region: d.region,
-    short: d.short,
-    bio: d.bio,
-    bioParagraphs: d.bioParagraphs,
-    education: d.education,
-    linkedin: d.linkedin,
-    articles: d.articles,
-  };
+function useCms() {
+  return getSupabaseEnv().configured;
 }
 
 export async function getLeadershipItems(): Promise<LeadershipItem[]> {
-  return leadershipData.map(mapDataItem);
+  if (!useCms()) return [];
+  const cms = await fetchCmsLeadership();
+  if (!cms) return [];
+  return Object.values(cms.bySection).flat();
 }
 
 export async function getLeadershipItem(slug: string): Promise<LeadershipItem | null> {
-  const found = leadershipData.find((d) => d.slug === slug);
-  return found ? mapDataItem(found) : null;
+  if (!useCms()) return null;
+  return fetchCmsLeadershipMember(slug);
 }
 
-export async function getLeadershipBySection(
-  section: LeadershipSection,
-): Promise<LeadershipItem[]> {
-  return leadershipData.filter((d) => d.section === section).map(mapDataItem);
+export async function getLeadershipBySection(section: string): Promise<LeadershipItem[]> {
+  if (!useCms()) return [];
+  const cms = await fetchCmsLeadership();
+  return cms?.bySection[section] ?? [];
+}
+
+export async function getLeadershipByCategories() {
+  if (!useCms()) return null;
+  const { fetchCmsLeadershipByCategories } = await import("@/lib/cms/leadership");
+  return fetchCmsLeadershipByCategories();
 }
 
 export async function getDivisions(): Promise<string[]> {
-  const divs = new Set<string>();
-  leadershipData.forEach((d) => {
-    if (d.division) divs.add(d.division);
-  });
-  return Array.from(divs);
+  if (!useCms()) return [];
+  const cms = await fetchCmsLeadership();
+  return cms?.divisions ?? [];
 }
 
 export async function getRegions(): Promise<string[]> {
-  const regions = new Set<string>();
-  leadershipData.forEach((d) => {
-    if (d.region) regions.add(d.region);
-  });
-  return Array.from(regions).sort();
+  if (!useCms()) return [];
+  const cms = await fetchCmsLeadership();
+  return cms?.regions ?? [];
 }
 
-export function getLeadershipStaticParams() {
-  return leadershipData.map((d) => ({ slug: d.slug }));
+export async function getLeadershipStaticParams() {
+  if (!useCms()) return [];
+  const cms = await fetchCmsLeadership();
+  return (cms?.slugs ?? []).map((slug) => ({ slug }));
 }

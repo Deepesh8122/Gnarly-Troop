@@ -23,7 +23,17 @@ interface Coord {
   y: number;
 }
 
-export default function SectionVisionsResponsive() {
+type CmsPillar = {
+  slug: string;
+  title: string;
+  short_description: string | null;
+};
+
+export default function SectionVisionsResponsive({
+  cmsPillars,
+}: {
+  cmsPillars?: CmsPillar[];
+}) {
   const [activeSection, setActiveSection] = useState<VisionId | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [circleCoords, setCircleCoords] = useState<Coord[]>([]);

@@ -1,0 +1,60 @@
+.page {
+  padding: 100px 24px 80px;
+  background: linear-gradient(165deg, #faf5ff 0%, #f8fafc 50%, #fff 100%);
+  min-height: 70vh;
+}
+
+.header {
+  max-width: 640px;
+  margin: 0 auto 36px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5f259f;
+  margin: 0 0 8px;
+}
+
+.header h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 12px;
+  line-height: 1.1;
+}
+
+.lead {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: #475569;
+  margin: 0 0 20px;
+}
+
+.highlights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.highlights li {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.formArea {
+  max-width: 720px;
+  margin: 0 auto;
+}

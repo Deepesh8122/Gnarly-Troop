@@ -1,6 +1,8 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://help.github.com/articles/ignoring-files/
 
-# dependencies
+# -----------------------------------------------------------------------------
+# Dependencies & build
+# -----------------------------------------------------------------------------
 /node_modules
 /.pnp
 .pnp.*
@@ -9,35 +11,76 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
-# testing
 /coverage
-
-# next.js
 /.next/
 /out/
-
-# production
 /build
+/apps/
+*.tsbuildinfo
+next-env.d.ts
+/app/generated/prisma
 
-# misc
-.DS_Store
+# -----------------------------------------------------------------------------
+# Secrets & local environment (NEVER commit)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.public.example
+!.env.admin.example
+
 *.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.credentials/
 
-# debug
+# Payment / legacy DB (server-only)
+phonepe*.json
+razorpay*.json
+
+# -----------------------------------------------------------------------------
+# Hosting & local tooling
+# -----------------------------------------------------------------------------
+.vercel
+.turbo
+.DS_Store
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.idea/
+.vscode/*
+!.vscode/extensions.json
 
-# env files (can opt-in for committing if needed)
-.env*
+# Supabase CLI local state
+# supabase/.branches/
+# supabase/.temp/
+# supabase/.env
+# supabase/.env.*
 
-# vercel
-.vercel
+# -----------------------------------------------------------------------------
+# Database schema & seeds (PRIVATE — distribute via secure channel only)
+# See docs/SECURITY.md and supabase/README.md
+# -----------------------------------------------------------------------------
+# /supabase/migrations/
+# /supabase/seed.sql
+# /supabase/RUN_ONLY_IF_MISSING.sql
+# /supabase/**/*.local.sql
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# -----------------------------------------------------------------------------
+# CMS / admin source (PRIVATE repo or private branch only)
+# Public GitHub should use a frontend-only clone; see docs/SECURITY.md
+# -----------------------------------------------------------------------------
+# /app/(admin)/
+# /lib/admin/
+# /components/admin/
+# /app/api/admin/
+# /docs/CMS_ARCHITECTURE.md
+# /docs/FIX_CONNECTION_NOW.md
 
-/app/generated/prisma
+# Optional: internal security notes (keep local)
+/security/local-notes.md
+package-lock.json
+yarn.lock

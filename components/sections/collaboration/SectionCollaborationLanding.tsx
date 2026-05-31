@@ -9,11 +9,14 @@ import {
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import styles from "./SectionCollaborationLanding.module.css";
 
+type LandingContent = typeof collaborationLanding;
+
 type Props = {
   initiatives: CollaborationInitiative[];
+  landing: LandingContent | null;
 };
 
-export default function SectionCollaborationLanding({ initiatives }: Props) {
+export default function SectionCollaborationLanding({ initiatives, landing }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
 
@@ -24,7 +27,18 @@ export default function SectionCollaborationLanding({ initiatives }: Props) {
     }
   };
 
-  const L = collaborationLanding;
+  if (!landing) {
+    return (
+      <div className={styles.page}>
+        <p className="mx-auto max-w-lg p-16 text-center text-zinc-600">
+          Collaboration content is not published yet. Import or add content in the admin
+          panel.
+        </p>
+      </div>
+    );
+  }
+
+  const L = landing;
 
   return (
     <div className={styles.page}>

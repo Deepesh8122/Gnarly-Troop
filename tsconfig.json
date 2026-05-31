@@ -20,7 +20,9 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@gnarly/types": ["./packages/types/src/index.ts"],
+      "@gnarly/lib": ["./packages/lib/src/index.ts"]
     }
   },
   "include": [

@@ -1,7 +1,21 @@
 import React from "react";
 import styles from "@/app/about.module.css";
 
-export default function SectionAbout() {
+type Props = {
+  titleHi?: string;
+  titleEn?: string;
+  subtitle?: string;
+  estd?: string;
+  backgroundImage?: string;
+};
+
+export default function SectionAbout({
+  titleHi = "स्वागतम् मम राष्ट्रे भारतवर्षे !",
+  titleEn = "Welcome to My Country, India",
+  subtitle = "Explore Bharat with Gnarly Troop",
+  estd = "EST. 2013",
+  backgroundImage = "/images/sections/bg-about-country-maps.png",
+}: Props) {
   return (
     <section
       id="sectionAbout"
@@ -11,26 +25,19 @@ export default function SectionAbout() {
     >
       <div className={styles["hero-map-viewport"]}>
         <img
-          src="/images/sections/bg-about-country-maps.png"
+          src={backgroundImage}
           alt="World map with India highlighted"
           className={styles["hero-map-image"]}
           aria-hidden="true"
         />
 
         <div className={styles["hero-content"]}>
-          <h1 className={styles["hero-title-hi"]}>
-            स्वागतम् मम राष्ट्रे भारतवर्षे !
-          </h1>
-
-          <h2 className={styles["hero-title-en"]}>
-            Welcome to My Country, India
-          </h2>
+          <h1 className={styles["hero-title-hi"]}>{titleHi}</h1>
+          <h2 className={styles["hero-title-en"]}>{titleEn}</h2>
 
           <p className={styles["hero-sub"]}>
-            <span className={styles["hero-sub-text"]}>
-              Explore Bharat with Gnarly Troop
-            </span>
-            <span className={styles["hero-sub-estd"]}>EST. 2013</span>
+            <span className={styles["hero-sub-text"]}>{subtitle}</span>
+            <span className={styles["hero-sub-estd"]}>{estd}</span>
           </p>
 
           <div className={styles.legend}>
@@ -41,24 +48,16 @@ export default function SectionAbout() {
             </div>
 
             <div className={styles["legend-labels"]}>
-              <span
-                className={styles["legend-item"]}
-                style={{ color: "var(--pink)" }}
-              >
+              <span className={styles["legend-item"]} style={{ color: "var(--pink)" }}>
                 My Country
               </span>
-
               <span
                 className={styles["legend-item"]}
                 style={{ color: "var(--accent-2)" }}
               >
                 My Responsibility
               </span>
-
-              <span
-                className={styles["legend-item"]}
-                style={{ color: "var(--blue)" }}
-              >
+              <span className={styles["legend-item"]} style={{ color: "var(--blue)" }}>
                 My Pride
               </span>
             </div>

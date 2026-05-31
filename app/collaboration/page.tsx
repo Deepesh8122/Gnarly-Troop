@@ -2,7 +2,12 @@ import Header from "@/components/sections/Header";
 import Footer from "@/components/sections/SectionFooter";
 import SectionCollaborationLanding from "@/components/sections/collaboration/SectionCollaborationLanding";
 import MoreAboutFoundation from "@/components/sections/shared/MoreAboutFoundation";
-import { getCollaborationInitiatives } from "@/src/lib/collaboration";
+import {
+  getCollaborationInitiatives,
+  getCollaborationLandingContent,
+} from "@/src/lib/collaboration";
+
+export const revalidate = 60;
 
 export const metadata = {
   title: "Collaboration — Gnarly Troop",
@@ -11,12 +16,15 @@ export const metadata = {
 };
 
 export default async function CollaborationPage() {
-  const initiatives = await getCollaborationInitiatives();
+  const [initiatives, landing] = await Promise.all([
+    getCollaborationInitiatives(),
+    getCollaborationLandingContent(),
+  ]);
 
   return (
     <>
       <Header />
-      <SectionCollaborationLanding initiatives={initiatives} />
+      <SectionCollaborationLanding initiatives={initiatives} landing={landing ?? null} />
       <MoreAboutFoundation />
       <Footer />
     </>

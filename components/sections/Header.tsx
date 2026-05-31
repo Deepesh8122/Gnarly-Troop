@@ -11,20 +11,20 @@ type MenuItem = {
   url?: string;
 };
 
-const MENU: MenuItem[] = [
+const DEFAULT_MENU: MenuItem[] = [
   { id: "home", label: "Home", url: "/" },
   { id: "about", label: "About", url: "/#sectionAbout" },
   { id: "timeline", label: "Timeline", url: "/#sectionTimelines" },
   { id: "visions", label: "Visions", url: "/#sectionVisions" },
   { id: "gallery", label: "Gallery", url: "/#sectionGallery" },
-  // { id: "contact", label: "Contact", url: "/#sectionContact" },
   { id: "team", label: "Leadership", url: "/leadership" },
   { id: "collaboration", label: "Collaboration", url: "/collaboration" },
 ];
 
 export default function Header() {
+  const [menu, setMenu] = useState<MenuItem[]>(DEFAULT_MENU);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [active, setActive] = useState<string | null>(MENU[0].id);
+  const [active, setActive] = useState<string | null>(DEFAULT_MENU[0].id);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +32,25 @@ export default function Header() {
 
   const touchStartX = useRef<number | null>(null);
   const dragging = useRef(false);
+
+  useEffect(() => {
+    fetch("/api/navigation?menu=main-header")
+      .then((r) => r.json())
+      .then((data: { items?: { id: string; label: string; url?: string }[] }) => {
+        if (data.items?.length) {
+          const items: MenuItem[] = data.items.map((item) => ({
+            id: item.id,
+            label: item.label,
+            url: item.url,
+          }));
+          setMenu(items);
+          setActive(items[0]?.id ?? null);
+        }
+      })
+      .catch(() => {
+        /* keep default menu */
+      });
+  }, []);
 
   /* ---------------------------
      Helpers to resolve menu action
@@ -208,7 +227,7 @@ export default function Header() {
 
     const updateActive = () => {
       let found: string | null = null;
-      for (const item of MENU) {
+      for (const item of menu) {
         const sectionId = findSectionForMenu(item);
         if (!sectionId) continue;
         const el = document.getElementById(sectionId);
@@ -308,7 +327,7 @@ export default function Header() {
 
           {/* DESKTOP MENU */}
           <nav className={styles["desktop-menu"]}>
-            {MENU.map((m) => (
+            {menu.map((m) => (
               <button
                 key={m.id}
                 onClick={() => onMenuClick(m)}
@@ -386,7 +405,7 @@ export default function Header() {
           </div>
 
           <div className={styles["mobile-list"]}>
-            {MENU.map((m) => (
+            {menu.map((m) => (
               <button
                 key={m.id}
                 onClick={() => onMenuClick(m)}

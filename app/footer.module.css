@@ -37,6 +37,11 @@
   line-height: 26px;
 }
 
+.rightCol ul li a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .rightCol ul li {
   cursor: pointer;
   transition: 0.3s;
