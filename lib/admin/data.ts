@@ -12,6 +12,8 @@ function adminDb() {
   }
 }
 
+export { adminDb };
+
 export async function getAdminDashboardStats() {
   const supabase = adminDb();
   if (!supabase) return null;
@@ -25,6 +27,7 @@ export async function getAdminDashboardStats() {
     partners,
     galleries,
     donations,
+    brochureLeads,
   ] = await Promise.all([
     supabase.from("pages").select("id", { count: "exact", head: true }),
     supabase.from("events").select("id", { count: "exact", head: true }),
@@ -39,6 +42,9 @@ export async function getAdminDashboardStats() {
       .from("donations")
       .select("id", { count: "exact", head: true })
       .eq("status", "success"),
+    supabase
+      .from("brochure_download_leads")
+      .select("id", { count: "exact", head: true }),
   ]);
 
   return {
@@ -50,6 +56,7 @@ export async function getAdminDashboardStats() {
     partners: partners.count ?? 0,
     galleries: galleries.count ?? 0,
     donations: donations.count ?? 0,
+    brochureLeads: brochureLeads.count ?? 0,
   };
 }
 
