@@ -104,6 +104,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
       donorName: String(fd.get("donorName")),
       email: String(fd.get("email")),
       phone: String(fd.get("phone")),
+      returnOrigin: window.location.origin,
     };
 
     if (isCustom) {

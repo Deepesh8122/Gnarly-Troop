@@ -15,6 +15,8 @@ const bodySchema = z.object({
   state: z.string().optional(),
   district: z.string().optional(),
   pinCode: z.string().optional(),
+  /** Browser origin — used when proxy headers are missing; must match request Host. */
+  returnOrigin: z.string().url().optional(),
 });
 
 export async function POST(request: Request) {
@@ -88,7 +90,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const siteUrl = resolveSiteUrl(request);
+    const siteUrl = resolveSiteUrl(
+      request,
+      body.returnOrigin ?? request.headers.get("origin"),
+    );
     const payment = await createPhonePePayment(
       {
         merchantTransactionId,

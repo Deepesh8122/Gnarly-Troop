@@ -125,37 +125,57 @@ function siteUrlFromRequest(request: Request): string | null {
   if (!host) return null;
 
   const hostname = host.split(":")[0];
-  if (isLocalHost(hostname)) return null;
-
   const proto =
     request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
-    (hostname === "localhost" ? "http" : "https");
+    (isLocalHost(hostname) ? "http" : "https");
 
   return `${proto}://${host}`.replace(/\/$/, "");
 }
 
-/** Resolve public site URL for redirects (PhonePe return URL, auth callbacks). */
-export function resolveSiteUrl(request?: Request): string {
+function normalizeOrigin(origin: string | null | undefined): string | null {
+  if (!origin) return null;
+  try {
+    return new URL(origin).origin.replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
+function clientOriginMatchesRequest(request: Request, origin: string): boolean {
+  try {
+    const clientHost = new URL(origin).host;
+    const requestHost =
+      request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
+      request.headers.get("host");
+    if (!requestHost) return false;
+    return clientHost === requestHost;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Public site URL for redirects (PhonePe return URL, auth callbacks).
+ * Always prefers the host the user is actually on (from the incoming request).
+ */
+export function resolveSiteUrl(request?: Request, clientOrigin?: string | null): string {
+  if (request) {
+    const fromRequest = siteUrlFromRequest(request);
+    if (fromRequest) return fromRequest;
+
+    const fromClient = normalizeOrigin(clientOrigin);
+    if (fromClient && clientOriginMatchesRequest(request, fromClient)) {
+      return fromClient;
+    }
+  }
+
   const envUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
     process.env.SITE_URL?.replace(/\/$/, "") ||
     siteUrlFromPlatform() ||
     null;
 
-  const requestUrl = request ? siteUrlFromRequest(request) : null;
-
-  if (requestUrl && envUrl) {
-    try {
-      if (isLocalHost(new URL(envUrl).hostname)) {
-        return requestUrl;
-      }
-    } catch {
-      return requestUrl;
-    }
-  }
-
   if (envUrl) return envUrl;
-  if (requestUrl) return requestUrl;
   return "http://localhost:3000";
 }
 
