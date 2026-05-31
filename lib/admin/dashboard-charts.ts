@@ -39,7 +39,7 @@ async function fetchRowsSince<T extends { created_at: string }>(
     }
 
     if (!data?.length) break;
-    rows.push(...(data as T[]));
+    rows.push(...(data as unknown as T[]));
     if (data.length < PAGE_SIZE) break;
     offset += PAGE_SIZE;
   }
@@ -68,7 +68,7 @@ async function fetchDonationRowsForCharts(
     }
 
     if (!data?.length) break;
-    rows.push(...(data as DonationChartRow[]));
+    rows.push(...(data as unknown as DonationChartRow[]));
     if (data.length < PAGE_SIZE) break;
     offset += PAGE_SIZE;
   }
