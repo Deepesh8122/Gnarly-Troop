@@ -1,16 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "@/lib/env";
-import { isAdminDeployEnabled } from "@/lib/deploy-security";
 
 export async function updateSession(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  const isAdminPath = path.startsWith("/admin") || path.startsWith("/api/admin");
-
-  if (isAdminPath && !isAdminDeployEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
-
   const env = getSupabaseEnv();
   if (!env.configured || !env.url || !env.anonKey) {
     if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.includes("/login")) {

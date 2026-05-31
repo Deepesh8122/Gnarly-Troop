@@ -11,7 +11,9 @@ export function isAdminDeployEnabled(): boolean {
   const raw = process.env.ENABLE_ADMIN?.trim().toLowerCase();
   if (raw === "true" || raw === "1" || raw === "yes") return true;
   if (raw === "false" || raw === "0" || raw === "no") return false;
-  return process.env.NODE_ENV !== "production";
+  // Default on in dev; off in production unless explicitly enabled
+  if (process.env.NODE_ENV !== "production") return true;
+  return false;
 }
 
 export function assertAdminDeployEnabled(): void {
