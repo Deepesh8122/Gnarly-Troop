@@ -55,19 +55,20 @@ yarn-error.log*
 !.vscode/extensions.json
 
 # Supabase CLI local state
-# supabase/.branches/
-# supabase/.temp/
-# supabase/.env
-# supabase/.env.*
+supabase/
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/.env.*
 
 # -----------------------------------------------------------------------------
 # Database schema & seeds (PRIVATE — distribute via secure channel only)
 # See docs/SECURITY.md and supabase/README.md
 # -----------------------------------------------------------------------------
-# /supabase/migrations/
-# /supabase/seed.sql
-# /supabase/RUN_ONLY_IF_MISSING.sql
-# /supabase/**/*.local.sql
+/supabase/migrations/
+/supabase/seed.sql
+/supabase/RUN_ONLY_IF_MISSING.sql
+/supabase/**/*.local.sql
 
 # -----------------------------------------------------------------------------
 # CMS / admin source (PRIVATE repo or private branch only)
