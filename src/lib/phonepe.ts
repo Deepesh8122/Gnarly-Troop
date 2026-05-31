@@ -29,6 +29,10 @@ function getPhonePeEnv(): "production" | "sandbox" {
   return "sandbox";
 }
 
+export function getPhonePeEnvironment(): "production" | "sandbox" {
+  return getPhonePeEnv();
+}
+
 function getPhonePeApiBase(): string {
   return getPhonePeEnv() === "production"
     ? "https://api.phonepe.com/apis/pg"
@@ -103,12 +107,17 @@ export function verifyPhonePeWebhook(authHeader: string | null): boolean {
   return normalized === expected;
 }
 
-export async function createPhonePePayment(req: PhonePePayRequest): Promise<{
+export async function createPhonePePayment(
+  req: PhonePePayRequest,
+  options?: { siteUrl?: string },
+): Promise<{
   redirectUrl: string;
   merchantTransactionId: string;
+  returnUrl: string;
 }> {
   const token = await getAccessToken();
-  const siteUrl = getSiteUrl();
+  const siteUrl = options?.siteUrl ?? getSiteUrl();
+  const returnUrl = `${siteUrl}/collaboration/donation/status/?id=${req.merchantTransactionId}`;
 
   const payload = {
     merchantOrderId: req.merchantTransactionId,
@@ -117,7 +126,7 @@ export async function createPhonePePayment(req: PhonePePayRequest): Promise<{
       type: "PG_CHECKOUT",
       message: "Donation to Gnarly Troop",
       merchantUrls: {
-        redirectUrl: `${siteUrl}/collaboration/donation/status/?id=${req.merchantTransactionId}`,
+        redirectUrl: returnUrl,
       },
     },
     metaInfo: {
@@ -143,12 +152,13 @@ export async function createPhonePePayment(req: PhonePePayRequest): Promise<{
   return {
     redirectUrl: json.redirectUrl,
     merchantTransactionId: req.merchantTransactionId,
+    returnUrl,
   };
 }
 
 export async function checkPhonePeStatus(merchantTransactionId: string) {
   const token = await getAccessToken();
-  const url = `${getPhonePeApiBase()}/checkout/v2/order/${encodeURIComponent(merchantTransactionId)}/status?details=false`;
+  const url = `${getPhonePeApiBase()}/checkout/v2/order/${encodeURIComponent(merchantTransactionId)}/status?details=true`;
 
   const res = await fetch(url, {
     headers: {
@@ -156,16 +166,29 @@ export async function checkPhonePeStatus(merchantTransactionId: string) {
       Authorization: `O-Bearer ${token}`,
     },
   });
-  return res.json();
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json?.message ?? json?.code ?? `PhonePe status check failed (${res.status})`);
+  }
+
+  return json;
 }
 
 export function isPhonePePaymentSuccessful(statusRes: {
   state?: string;
+  code?: string;
   paymentDetails?: Array<{ state?: string; transactionId?: string }>;
 }): boolean {
+  if (statusRes?.code === "ORDER_NOT_FOUND" || statusRes?.state === "FAILED") {
+    return false;
+  }
+
   return (
     statusRes?.state === "COMPLETED" ||
-    statusRes?.paymentDetails?.some((detail) => detail.state === "COMPLETED") === true
+    statusRes?.paymentDetails?.some(
+      (detail) => detail.state === "COMPLETED" && Boolean(detail.transactionId),
+    ) === true
   );
 }
 

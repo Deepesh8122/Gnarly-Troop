@@ -33,6 +33,7 @@ export async function getDonationTiers(): Promise<DonationTier[]> {
 export type DonationTransactionRow = {
   id: string;
   merchant_transaction_id: string;
+  phonepe_transaction_id: string | null;
   donor_name: string | null;
   email: string | null;
   phone: string | null;
@@ -65,7 +66,7 @@ export async function getRecentDonationTransactions(
   let query = supabase
     .from("donations")
     .select(
-      "id, merchant_transaction_id, donor_name, email, phone, amount_paise, payment_provider, status, created_at",
+      "id, merchant_transaction_id, phonepe_transaction_id, donor_name, email, phone, amount_paise, payment_provider, status, created_at",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -80,27 +81,7 @@ export async function getRecentDonationTransactions(
     return [];
   }
 
-  const rows = (data ?? []) as DonationTransactionRow[];
-  if (!status || status === "all") {
-    return rows.sort((a, b) => {
-      const order = (statusValue?: string | null) =>
-        statusValue === "success"
-          ? 0
-          : statusValue === "initiated"
-          ? 1
-          : statusValue === "failed"
-          ? 2
-          : 3;
-      const orderA = order(a.status);
-      const orderB = order(b.status);
-      if (orderA !== orderB) return orderA - orderB;
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return dateB - dateA;
-    });
-  }
-
-  return rows;
+  return (data ?? []) as DonationTransactionRow[];
 }
 
 export async function getDonationByMerchantId(merchantTransactionId: string) {

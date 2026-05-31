@@ -41,7 +41,8 @@ export async function getAdminDashboardStats() {
     supabase
       .from("donations")
       .select("id", { count: "exact", head: true })
-      .eq("status", "success"),
+      .eq("status", "success")
+      .not("phonepe_transaction_id", "is", null),
     supabase
       .from("brochure_download_leads")
       .select("id", { count: "exact", head: true }),

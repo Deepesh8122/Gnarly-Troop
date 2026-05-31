@@ -54,7 +54,7 @@ CREATE INDEX idx_donations_merchant_txn ON donations(merchant_transaction_id);
 -- Aggregated view for admin "top donors"
 CREATE OR REPLACE VIEW donor_leaderboard AS
 SELECT
-  COALESCE(NULLIF(trim(phone), ''), email::text) AS donor_key,
+  lower(email::text) || '|' || COALESCE(NULLIF(trim(phone), ''), '') AS donor_key,
   max(donor_name) AS donor_name,
   email,
   phone,
@@ -62,7 +62,7 @@ SELECT
   sum(amount_paise) FILTER (WHERE status = 'success') AS total_amount_paise,
   max(created_at) FILTER (WHERE status = 'success') AS last_donation_at
 FROM donations
-GROUP BY COALESCE(NULLIF(trim(phone), ''), email::text), email, phone
+GROUP BY email, phone
 HAVING sum(amount_paise) FILTER (WHERE status = 'success') > 0
 ORDER BY total_amount_paise DESC;
 

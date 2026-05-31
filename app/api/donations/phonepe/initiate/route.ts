@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createPhonePePayment, getPhonePeConfig } from "@/src/lib/phonepe";
-import { getSupabaseEnv } from "@/lib/env";
+import { getSupabaseEnv, resolveSiteUrl } from "@/lib/env";
 
 const bodySchema = z.object({
   tierSlug: z.string().optional(),
@@ -88,13 +88,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const payment = await createPhonePePayment({
+    const siteUrl = resolveSiteUrl(request);
+    const payment = await createPhonePePayment(
+      {
+        merchantTransactionId,
+        amountPaise,
+        userId: body.email,
+        mobileNumber: normalizedPhone,
+      },
+      { siteUrl },
+    );
+    return NextResponse.json({
+      redirectUrl: payment.redirectUrl,
       merchantTransactionId,
-      amountPaise,
-      userId: body.email,
-      mobileNumber: normalizedPhone,
+      returnUrl: payment.returnUrl,
     });
-    return NextResponse.json({ redirectUrl: payment.redirectUrl, merchantTransactionId });
   } catch (e) {
     await supabase
       .from("donations")

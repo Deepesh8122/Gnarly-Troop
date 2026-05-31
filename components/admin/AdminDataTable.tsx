@@ -3,13 +3,16 @@
 import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import AdminTableRowDelete from "@/components/admin/AdminTableRowDelete";
+import { donationStatusClass } from "@/lib/admin/donation-status";
 
 export type AdminTableColumn = {
   key: string;
   header: string;
   sortable?: boolean;
-  /** text | link | badge-live | badge | date | mono | thumb */
-  format?: "text" | "link" | "badge-live" | "badge" | "date" | "mono" | "thumb";
+  /** text | link | badge-live | badge | status-pill | date | datetime | inr | mono | thumb */
+  format?: "text" | "link" | "badge-live" | "badge" | "status-pill" | "date" | "datetime" | "inr" | "mono" | "thumb";
+  /** Raw status key used for status-pill colors (defaults to "status"). */
+  statusKey?: string;
   /** For link format: `/admin/leadership/{id}/` */
   linkPattern?: string;
   /** Column key used as link label (defaults to column key) */
@@ -26,7 +29,15 @@ type Props = {
   /** Keys to include in global search */
   searchKeys?: string[];
   statusFilterKey?: string;
+  /** Initial status filter value (e.g. "success" to hide pending/failed by default). */
+  defaultStatusFilter?: string;
+  /** Human-readable labels for status filter dropdown values. */
+  statusFilterLabels?: Record<string, string>;
+  /** Label for the status filter control (defaults to "Status"). */
+  statusFilterLabel?: string;
   dateFilterKey?: string;
+  /** Prepend a row number column (#). */
+  showRowNumbers?: boolean;
   defaultPageSize?: number;
   pageSizeOptions?: number[];
   /** Server action for row delete — FormData must include `id` */
@@ -49,6 +60,29 @@ function formatDate(value: unknown) {
   const d = new Date(String(value));
   if (Number.isNaN(d.getTime())) return String(value);
   return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function formatDateTime(value: unknown) {
+  if (!value) return "—";
+  const d = new Date(String(value));
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatInrPaise(value: unknown) {
+  const paise = Number(value);
+  if (!Number.isFinite(paise)) return "—";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(paise / 100);
 }
 
 function renderCell(row: AdminTableRow, col: AdminTableColumn) {
@@ -90,8 +124,27 @@ function renderCell(row: AdminTableRow, col: AdminTableColumn) {
     return <span className="admin-badge">{String(value ?? "—")}</span>;
   }
 
+  if (col.format === "status-pill") {
+    const rawStatus = String(row[col.statusKey ?? "status"] ?? "");
+    return (
+      <span
+        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${donationStatusClass(rawStatus)}`}
+      >
+        {String(value ?? "—")}
+      </span>
+    );
+  }
+
   if (col.format === "date") {
     return formatDate(value);
+  }
+
+  if (col.format === "datetime") {
+    return formatDateTime(value);
+  }
+
+  if (col.format === "inr") {
+    return <span className="font-semibold text-teal-800">{formatInrPaise(value)}</span>;
   }
 
   if (col.format === "mono") {
@@ -108,7 +161,11 @@ export default function AdminDataTable({
   searchPlaceholder = "Search all columns…",
   searchKeys,
   statusFilterKey,
+  defaultStatusFilter = "",
+  statusFilterLabels,
+  statusFilterLabel = "Status",
   dateFilterKey,
+  showRowNumbers = false,
   defaultPageSize = 10,
   pageSizeOptions = [10, 25, 50, 100],
   deleteAction,
@@ -118,7 +175,7 @@ export default function AdminDataTable({
   const [search, setSearch] = useState("");
   const [columnFilter, setColumnFilter] = useState("");
   const [filterColumn, setFilterColumn] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(defaultStatusFilter);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -211,9 +268,12 @@ export default function AdminDataTable({
 
   const filterableColumns = columns.filter((c) => c.format !== "thumb");
   const showActions = Boolean(deleteAction || renderActions);
-  const allColumns = showActions
-    ? [...columns, { key: "_actions", header: "Actions", sortable: false as const }]
+  const displayColumns = showRowNumbers
+    ? [{ key: "_rowNum", header: "#", sortable: false as const }, ...columns]
     : columns;
+  const allColumns = showActions
+    ? [...displayColumns, { key: "_actions", header: "Actions", sortable: false as const }]
+    : displayColumns;
 
   return (
     <div className="space-y-4">
@@ -268,8 +328,8 @@ export default function AdminDataTable({
         )}
 
         {statusFilterKey && statusOptions.length > 0 && (
-          <div className="min-w-[120px]">
-            <label className="mb-1 block text-xs font-medium text-slate-600">Status</label>
+          <div className="min-w-[140px]">
+            <label className="mb-1 block text-xs font-medium text-slate-600">{statusFilterLabel}</label>
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -281,7 +341,7 @@ export default function AdminDataTable({
               <option value="">All</option>
               {statusOptions.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {statusFilterLabels?.[s] ?? s}
                 </option>
               ))}
             </select>
@@ -322,9 +382,9 @@ export default function AdminDataTable({
         <table className="w-full min-w-[600px] text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-            {columns.map((c) => (
+            {displayColumns.map((c) => (
               <th key={c.key} className="px-4 py-3 font-semibold">
-                {c.sortable !== false && c.format !== "thumb" ? (
+                {c.sortable !== false && c.format !== "thumb" && c.key !== "_rowNum" ? (
                   <button
                     type="button"
                     onClick={() => toggleSort(c.key)}
@@ -363,7 +423,7 @@ export default function AdminDataTable({
                           setSearch("");
                           setColumnFilter("");
                           setFilterColumn("");
-                          setStatusFilter("");
+                          setStatusFilter(defaultStatusFilter);
                           setDateFrom("");
                           setDateTo("");
                           setPage(0);
@@ -377,14 +437,16 @@ export default function AdminDataTable({
                 </td>
               </tr>
             ) : (
-              pageRows.map((row) => (
+              pageRows.map((row, rowIndex) => (
                 <tr
                   key={String(row.id)}
                   className="border-t border-slate-100 text-slate-800 hover:bg-slate-50/50"
                 >
-                  {columns.map((c) => (
+                  {displayColumns.map((c) => (
                     <td key={c.key} className="px-4 py-3">
-                      {renderCell(row, c)}
+                      {c.key === "_rowNum"
+                        ? safePage * pageSize + rowIndex + 1
+                        : renderCell(row, c)}
                     </td>
                   ))}
                   {showActions && (

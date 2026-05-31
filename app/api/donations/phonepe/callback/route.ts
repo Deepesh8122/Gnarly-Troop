@@ -44,25 +44,35 @@ export async function POST(request: Request) {
 
     let statusRes: Awaited<ReturnType<typeof checkPhonePeStatus>> | null = null;
     if (!success && !failed) {
-      statusRes = await checkPhonePeStatus(merchantTransactionId);
+      try {
+        statusRes = await checkPhonePeStatus(merchantTransactionId);
+      } catch (error) {
+        console.error("[PhonePe callback] status check failed", merchantTransactionId, error);
+      }
     }
 
-    const paymentSuccess = success || (statusRes ? isPhonePePaymentSuccessful(statusRes) : false);
     const phonepeTransactionId =
       body.payload?.paymentDetails?.[0]?.transactionId ??
       (statusRes ? getPhonePeTransactionId(statusRes) : null);
 
+    const verifiedSuccess =
+      Boolean(phonepeTransactionId) &&
+      (success ||
+        event === "checkout.order.completed" ||
+        webhookState === "COMPLETED" ||
+        (statusRes ? isPhonePePaymentSuccessful(statusRes) : false));
+
     await supabase
       .from("donations")
       .update({
-        status: paymentSuccess ? "success" : failed ? "failed" : "initiated",
+        status: verifiedSuccess ? "success" : failed ? "failed" : "initiated",
         phonepe_transaction_id: phonepeTransactionId,
         callback_payload: statusRes ?? body,
         updated_at: new Date().toISOString(),
       })
       .eq("merchant_transaction_id", merchantTransactionId);
 
-    if (paymentSuccess) {
+    if (verifiedSuccess) {
       const { fulfillSuccessfulDonation } = await import("@/lib/donations/fulfill-donation");
       await fulfillSuccessfulDonation(merchantTransactionId);
     }

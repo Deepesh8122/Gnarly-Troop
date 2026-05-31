@@ -1,8 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import styles from "./DonationForm.module.css";
-import { passwordManagerIgnoreFormAttrs, passwordManagerIgnoreAttrs } from "@/lib/admin/form-attrs";
+import {
+  passwordManagerIgnoreFormAttrs,
+  publicFormInputAttrs,
+} from "@/lib/admin/form-attrs";
 
 type Tier = {
   id: string;
@@ -19,11 +22,54 @@ type Props = {
 
 const CUSTOM_SLUG = "custom";
 
+function DonorDetailsPlaceholder() {
+  return (
+    <>
+      <label className={styles.field} aria-hidden="true">
+        Full name *
+        <input disabled tabIndex={-1} />
+      </label>
+      <label className={styles.field} aria-hidden="true">
+        Email *
+        <input type="email" disabled tabIndex={-1} />
+      </label>
+      <label className={styles.field} aria-hidden="true">
+        Phone *
+        <input type="tel" disabled tabIndex={-1} />
+      </label>
+    </>
+  );
+}
+
+function DonorDetailsFields() {
+  return (
+    <>
+      <label className={styles.field}>
+        Full name *
+        <input name="donorName" required {...publicFormInputAttrs("name")} />
+      </label>
+      <label className={styles.field}>
+        Email *
+        <input name="email" type="email" required {...publicFormInputAttrs("email")} />
+      </label>
+      <label className={styles.field}>
+        Phone *
+        <input name="phone" type="tel" required {...publicFormInputAttrs("tel")} />
+      </label>
+    </>
+  );
+}
+
 export default function DonationForm({ tiers, phonePeReady }: Props) {
   const [selected, setSelected] = useState(tiers[0]?.slug ?? CUSTOM_SLUG);
   const [customRupees, setCustomRupees] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detailsMounted, setDetailsMounted] = useState(false);
+
+  useEffect(() => {
+    setDetailsMounted(true);
+  }, []);
 
   const selectedTier = tiers.find((t) => t.slug === selected);
   const isCustom = selected === CUSTOM_SLUG;
@@ -154,18 +200,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
           Used for your acknowledgement PDF and email. Payment happens on PhonePe (QR / UPI).
         </p>
 
-        <label className={styles.field}>
-          Full name *
-          <input name="donorName" required {...passwordManagerIgnoreAttrs} autoComplete="name" />
-        </label>
-        <label className={styles.field}>
-          Email *
-          <input name="email" type="email" required {...passwordManagerIgnoreAttrs} autoComplete="email" />
-        </label>
-        <label className={styles.field}>
-          Phone *
-          <input name="phone" type="tel" required {...passwordManagerIgnoreAttrs} autoComplete="tel" />
-        </label>
+        {detailsMounted ? <DonorDetailsFields /> : <DonorDetailsPlaceholder />}
       </section>
 
       {error && <p className={styles.error}>{error}</p>}

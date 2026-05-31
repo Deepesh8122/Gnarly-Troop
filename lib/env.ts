@@ -103,10 +103,62 @@ export function assertSupabaseEnv(): { url: string; anonKey: string } {
   return { url: env.url, anonKey: env.anonKey };
 }
 
-export function getSiteUrl(): string {
+function isLocalHost(hostname: string): boolean {
   return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".local")
+  );
+}
+
+function siteUrlFromPlatform(): string | null {
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    return vercel.startsWith("http") ? vercel.replace(/\/$/, "") : `https://${vercel}`;
+  }
+  return null;
+}
+
+function siteUrlFromRequest(request: Request): string | null {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost?.split(",")[0]?.trim() || request.headers.get("host");
+  if (!host) return null;
+
+  const hostname = host.split(":")[0];
+  if (isLocalHost(hostname)) return null;
+
+  const proto =
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
+    (hostname === "localhost" ? "http" : "https");
+
+  return `${proto}://${host}`.replace(/\/$/, "");
+}
+
+/** Resolve public site URL for redirects (PhonePe return URL, auth callbacks). */
+export function resolveSiteUrl(request?: Request): string {
+  const envUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
     process.env.SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
+    siteUrlFromPlatform() ||
+    null;
+
+  const requestUrl = request ? siteUrlFromRequest(request) : null;
+
+  if (requestUrl && envUrl) {
+    try {
+      if (isLocalHost(new URL(envUrl).hostname)) {
+        return requestUrl;
+      }
+    } catch {
+      return requestUrl;
+    }
+  }
+
+  if (envUrl) return envUrl;
+  if (requestUrl) return requestUrl;
+  return "http://localhost:3000";
+}
+
+export function getSiteUrl(): string {
+  return resolveSiteUrl();
 }
