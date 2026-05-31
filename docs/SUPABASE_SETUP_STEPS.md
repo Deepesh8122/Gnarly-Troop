@@ -107,7 +107,15 @@ PHONEPE_ENV=sandbox
 
    `PHONEPE_ENV` supports `sandbox`, `staging`, and production aliases like `production`, `prod`, or `live`.
 
-3. Configure webhook in PhonePe (recommended):
+   `PHONEPE_ENV` is the global switch: `sandbox` (UAT/test) or `production`/`prod`/`live` (real payments). Each donation is saved with a `payment_environment` tag for the admin Donors list.
+
+4. Apply migration for payment environment tagging (Supabase SQL editor or CLI):
+
+```
+supabase/migrations/20260601180000_donations_payment_environment.sql
+```
+
+5. Configure webhook in PhonePe (recommended):
 
 ```
 https://yourdomain.com/api/donations/phonepe/callback/
@@ -115,9 +123,9 @@ https://yourdomain.com/api/donations/phonepe/callback/
 
    Set `PHONEPE_WEBHOOK_USERNAME` and `PHONEPE_WEBHOOK_PASSWORD` to match the dashboard.
 
-4. Test donation: **http://localhost:3000/collaboration/donation/**
+6. Test donation: **http://localhost:3000/collaboration/donation/**
 
-5. View top donors in admin: **http://localhost:3000/admin/donors/**
+7. View top donors in admin: **http://localhost:3000/admin/donors/** — use the **Live / UAT** toggle to filter test vs real payments.
 
 ## Step 7 — CMS mode (optional, later)
 

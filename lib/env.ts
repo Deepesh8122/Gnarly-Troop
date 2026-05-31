@@ -135,9 +135,25 @@ function siteUrlFromRequest(request: Request): string | null {
 function normalizeOrigin(origin: string | null | undefined): string | null {
   if (!origin) return null;
   try {
-    return new URL(origin).origin.replace(/\/$/, "");
+    const url = new URL(origin);
+    if (!isLocalHost(url.hostname) && url.protocol === "http:") {
+      url.protocol = "https:";
+    }
+    return url.origin.replace(/\/$/, "");
   } catch {
     return null;
+  }
+}
+
+function ensureHttpsSiteUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!isLocalHost(parsed.hostname) && parsed.protocol === "http:") {
+      parsed.protocol = "https:";
+    }
+    return parsed.origin.replace(/\/$/, "");
+  } catch {
+    return url.replace(/\/$/, "");
   }
 }
 
@@ -175,7 +191,7 @@ export function resolveSiteUrl(request?: Request, clientOrigin?: string | null):
     siteUrlFromPlatform() ||
     null;
 
-  if (envUrl) return envUrl;
+  if (envUrl) return ensureHttpsSiteUrl(envUrl);
   return "http://localhost:3000";
 }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createPhonePePayment, getPhonePeConfig } from "@/src/lib/phonepe";
+import { getPhonePeEnvironment } from "@/lib/payments/phonepe-env";
 import { getSupabaseEnv, resolveSiteUrl } from "@/lib/env";
 
 const bodySchema = z.object({
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
     amount_paise: amountPaise,
     merchant_transaction_id: merchantTransactionId,
     payment_provider: "phonepe",
+    payment_environment: getPhonePeEnvironment(),
     status: "initiated",
   });
 
