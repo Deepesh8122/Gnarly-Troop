@@ -1,4 +1,5 @@
-import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { adminDb } from "@/lib/admin/data";
 import { getSupabaseEnv } from "@/lib/env";
 import type { PhonePePaymentEnvironment } from "@/lib/payments/phonepe-env";
 
@@ -106,8 +107,10 @@ export async function getDonorLeaderboard(
 ): Promise<DonorLeaderboardRow[]> {
   if (!getSupabaseEnv().configured) return [];
 
+  const supabase = adminDb();
+  if (!supabase) return [];
+
   if (environment === "all") {
-    const supabase = createServiceRoleClient();
     const { data, error } = await supabase.from("donor_leaderboard").select("*").limit(100);
     if (error) {
       console.error("[donor_leaderboard]", error.message);
@@ -116,7 +119,6 @@ export async function getDonorLeaderboard(
     return (data ?? []) as DonorLeaderboardRow[];
   }
 
-  const supabase = createServiceRoleClient();
   const { data, error } = await supabase
     .from("donations")
     .select(
@@ -138,7 +140,9 @@ export async function getRecentDonationTransactions(
   environment: DonationEnvironmentFilter = "all",
 ): Promise<DonationTransactionRow[]> {
   if (!getSupabaseEnv().configured) return [];
-  const supabase = createServiceRoleClient();
+
+  const supabase = adminDb();
+  if (!supabase) return [];
   let query = supabase
     .from("donations")
     .select(
