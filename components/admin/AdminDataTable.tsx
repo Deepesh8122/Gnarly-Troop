@@ -4,13 +4,14 @@ import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import AdminTableRowDelete from "@/components/admin/AdminTableRowDelete";
 import { donationStatusClass } from "@/lib/admin/donation-status";
+import { paymentEnvironmentBadgeClass } from "@/lib/admin/payment-environment";
 
 export type AdminTableColumn = {
   key: string;
   header: string;
   sortable?: boolean;
-  /** text | link | badge-live | badge | status-pill | date | datetime | inr | mono | thumb */
-  format?: "text" | "link" | "badge-live" | "badge" | "status-pill" | "date" | "datetime" | "inr" | "mono" | "thumb";
+  /** text | link | badge-live | badge | status-pill | env-pill | date | datetime | inr | mono | thumb */
+  format?: "text" | "link" | "badge-live" | "badge" | "status-pill" | "env-pill" | "date" | "datetime" | "inr" | "mono" | "thumb";
   /** Raw status key used for status-pill colors (defaults to "status"). */
   statusKey?: string;
   /** For link format: `/admin/leadership/{id}/` */
@@ -129,6 +130,17 @@ function renderCell(row: AdminTableRow, col: AdminTableColumn) {
     return (
       <span
         className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${donationStatusClass(rawStatus)}`}
+      >
+        {String(value ?? "—")}
+      </span>
+    );
+  }
+
+  if (col.format === "env-pill") {
+    const rawEnv = String(row[col.statusKey ?? "payment_environment"] ?? "");
+    return (
+      <span
+        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${paymentEnvironmentBadgeClass(rawEnv)}`}
       >
         {String(value ?? "—")}
       </span>
