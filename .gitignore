@@ -15,6 +15,7 @@
 /.next/
 /out/
 /build
+/apps/
 *.tsbuildinfo
 next-env.d.ts
 /app/generated/prisma
@@ -54,30 +55,32 @@ yarn-error.log*
 !.vscode/extensions.json
 
 # Supabase CLI local state
-supabase/.branches/
-supabase/.temp/
-supabase/.env
-supabase/.env.*
+# supabase/.branches/
+# supabase/.temp/
+# supabase/.env
+# supabase/.env.*
 
 # -----------------------------------------------------------------------------
 # Database schema & seeds (PRIVATE — distribute via secure channel only)
 # See docs/SECURITY.md and supabase/README.md
 # -----------------------------------------------------------------------------
-/supabase/migrations/
-/supabase/seed.sql
-/supabase/RUN_ONLY_IF_MISSING.sql
-/supabase/**/*.local.sql
+# /supabase/migrations/
+# /supabase/seed.sql
+# /supabase/RUN_ONLY_IF_MISSING.sql
+# /supabase/**/*.local.sql
 
 # -----------------------------------------------------------------------------
 # CMS / admin source (PRIVATE repo or private branch only)
 # Public GitHub should use a frontend-only clone; see docs/SECURITY.md
 # -----------------------------------------------------------------------------
-/app/(admin)/
-/lib/admin/
-/components/admin/
-/app/api/admin/
-/docs/CMS_ARCHITECTURE.md
-/docs/FIX_CONNECTION_NOW.md
+# /app/(admin)/
+# /lib/admin/
+# /components/admin/
+# /app/api/admin/
+# /docs/CMS_ARCHITECTURE.md
+# /docs/FIX_CONNECTION_NOW.md
 
 # Optional: internal security notes (keep local)
 /security/local-notes.md
+package-lock.json
+yarn.lock

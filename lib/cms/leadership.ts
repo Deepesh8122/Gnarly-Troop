@@ -1,7 +1,16 @@
-import type { LeadershipItem, LeadershipSection } from "@/src/lib/leadership";
+import type { LeadershipItem } from "@/src/lib/leadership";
 import { getSupabaseEnv } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isAllowedTeamCategorySlug, TEAM_CATEGORY_SLUGS } from "@/lib/team-categories";
 import { getPublicMediaUrl } from "@gnarly/lib";
+
+export type LeadershipCategoryGroup = {
+  slug: string;
+  name: string;
+  displayStyle: "carousel" | "grid";
+  sortOrder: number;
+  members: LeadershipItem[];
+};
 
 type MemberRow = {
   id: string;
@@ -15,7 +24,8 @@ type MemberRow = {
   education: string | null;
   linkedin_url: string | null;
   legacy_image_path: string | null;
-  team_categories: { slug: string } | null;
+  sort_order: number;
+  team_categories: { slug: string; name: string; display_style: string; sort_order: number } | null;
   image: {
     bucket: string;
     storage_path: string;
@@ -29,6 +39,14 @@ type MemberRow = {
     is_enabled: boolean;
   }[];
 };
+
+function normalizeCategory(
+  cat: MemberRow["team_categories"],
+): { slug: string; name: string; display_style: string; sort_order: number } | null {
+  if (!cat) return null;
+  if (Array.isArray(cat)) return cat[0] ?? null;
+  return cat;
+}
 
 function imageSrc(row: MemberRow): string {
   if (row.legacy_image_path) {
@@ -51,7 +69,8 @@ function mapMember(row: MemberRow): LeadershipItem {
   const paragraphs = Array.isArray(row.bio_paragraphs)
     ? (row.bio_paragraphs as string[])
     : [];
-  const section = (row.team_categories?.slug ?? "leaders") as LeadershipSection;
+  const cat = normalizeCategory(row.team_categories);
+  const sectionSlug = cat?.slug ?? "leaders";
 
   return {
     slug: row.slug,
@@ -61,9 +80,10 @@ function mapMember(row: MemberRow): LeadershipItem {
     alt: row.full_name,
     name: row.full_name,
     division: row.division ?? undefined,
-    section,
+    section: sectionSlug as LeadershipItem["section"],
+    categoryName: cat?.name,
     region: row.region ?? undefined,
-    short: paragraphs[0] ?? row.bio_html ?? undefined,
+    short: paragraphs[0] ?? stripHtml(row.bio_html)?.slice(0, 200),
     bio: row.bio_html ?? undefined,
     bioParagraphs: paragraphs.length ? paragraphs : undefined,
     education: row.education ?? undefined,
@@ -77,6 +97,11 @@ function mapMember(row: MemberRow): LeadershipItem {
         type: (a.article_type as "Article" | "Video" | "Story") ?? "Article",
       })),
   };
+}
+
+function stripHtml(html: string | null): string | undefined {
+  if (!html) return undefined;
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export async function hasCmsLeadership(): Promise<boolean> {
@@ -94,8 +119,32 @@ export async function hasCmsLeadership(): Promise<boolean> {
   }
 }
 
+/** Legacy section-based grouping (backward compatible) */
 export async function fetchCmsLeadership(): Promise<{
-  bySection: Record<LeadershipSection, LeadershipItem[]>;
+  bySection: Record<string, LeadershipItem[]>;
+  divisions: string[];
+  regions: string[];
+  slugs: string[];
+} | null> {
+  const grouped = await fetchCmsLeadershipByCategories();
+  if (!grouped) return null;
+
+  const bySection: Record<string, LeadershipItem[]> = {};
+  for (const cat of grouped.categories) {
+    bySection[cat.slug] = cat.members;
+  }
+
+  return {
+    bySection,
+    divisions: grouped.divisions,
+    regions: grouped.regions,
+    slugs: grouped.slugs,
+  };
+}
+
+/** Dynamic categories from team_categories table */
+export async function fetchCmsLeadershipByCategories(): Promise<{
+  categories: LeadershipCategoryGroup[];
   divisions: string[];
   regions: string[];
   slugs: string[];
@@ -103,10 +152,18 @@ export async function fetchCmsLeadership(): Promise<{
   if (!(await hasCmsLeadership())) return null;
 
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+
+  const { data: categoryRows } = await supabase
+    .from("team_categories")
+    .select("slug, name, display_style, sort_order")
+    .eq("is_enabled", true)
+    .in("slug", TEAM_CATEGORY_SLUGS)
+    .order("sort_order");
+
+  const { data: memberRows } = await supabase
     .from("team_members")
     .select(
-      `*, team_categories(slug),
+      `*, team_categories(slug, name, display_style, sort_order),
        image:media_library!team_members_image_media_id_fkey(bucket, storage_path, alt_text),
        articles:team_member_articles(*)`,
     )
@@ -114,21 +171,11 @@ export async function fetchCmsLeadership(): Promise<{
     .eq("is_enabled", true)
     .order("sort_order");
 
-  if (!data?.length) return null;
+  if (!memberRows?.length) return null;
 
-  const members = (data as MemberRow[]).map(mapMember);
-  const bySection: Record<LeadershipSection, LeadershipItem[]> = {
-    executive: [],
-    board: [],
-    advisory: [],
-    leaders: [],
-    historical: [],
-  };
-
-  for (const m of members) {
-    if (bySection[m.section]) bySection[m.section].push(m);
-  }
-
+  const members = (memberRows as MemberRow[])
+    .map(mapMember)
+    .filter((m) => isAllowedTeamCategorySlug(m.section));
   const divisions = new Set<string>();
   const regions = new Set<string>();
   members.forEach((m) => {
@@ -136,8 +183,38 @@ export async function fetchCmsLeadership(): Promise<{
     if (m.region) regions.add(m.region);
   });
 
+  const membersByCategory = new Map<string, LeadershipItem[]>();
+  for (const m of members) {
+    const list = membersByCategory.get(m.section) ?? [];
+    list.push(m);
+    membersByCategory.set(m.section, list);
+  }
+
+  const categories: LeadershipCategoryGroup[] = (categoryRows ?? []).map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    displayStyle: (c.display_style === "carousel" ? "carousel" : "grid") as "carousel" | "grid",
+    sortOrder: c.sort_order,
+    members: membersByCategory.get(c.slug) ?? [],
+  }));
+
+  // Categories with members but missing from team_categories row
+  for (const [slug, list] of membersByCategory) {
+    if (!categories.some((c) => c.slug === slug) && list.length > 0) {
+      categories.push({
+        slug,
+        name: list[0]?.categoryName ?? slug,
+        displayStyle: "grid",
+        sortOrder: 999,
+        members: list,
+      });
+    }
+  }
+
+  categories.sort((a, b) => a.sortOrder - b.sortOrder);
+
   return {
-    bySection,
+    categories,
     divisions: Array.from(divisions),
     regions: Array.from(regions).sort(),
     slugs: members.map((m) => m.slug),
@@ -153,7 +230,7 @@ export async function fetchCmsLeadershipMember(
   const { data } = await supabase
     .from("team_members")
     .select(
-      `*, team_categories(slug),
+      `*, team_categories(slug, name, display_style, sort_order),
        image:media_library!team_members_image_media_id_fkey(bucket, storage_path, alt_text),
        articles:team_member_articles(*)`,
     )

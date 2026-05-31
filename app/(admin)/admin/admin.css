@@ -1,0 +1,174 @@
+/* Gnarly Troop CMS — light professional admin theme */
+.admin-root {
+  --admin-bg: #f1f5f9;
+  --admin-surface: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-text: #0f172a;
+  --admin-muted: #64748b;
+  --admin-primary: #0d9488;
+  --admin-primary-hover: #0f766e;
+  --admin-accent: #f59e0b;
+  --admin-sidebar: #ffffff;
+  --admin-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.admin-root {
+  min-height: 100vh;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.admin-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-input {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--admin-text);
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.admin-btn-primary {
+  border-radius: 8px;
+  background: var(--admin-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+.admin-btn-primary:hover {
+  background: var(--admin-primary-hover);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+}
+
+/* Force light theme — override stray dark Tailwind classes in admin */
+.admin-root {
+  color-scheme: light;
+}
+
+.admin-root h2,
+.admin-root h3,
+.admin-root h4 {
+  color: var(--admin-text);
+}
+
+.admin-root .text-white {
+  color: var(--admin-text) !important;
+}
+
+.admin-root .text-zinc-200,
+.admin-root .text-zinc-300,
+.admin-root .text-zinc-400,
+.admin-root .text-zinc-500 {
+  color: var(--admin-muted) !important;
+}
+
+.admin-root .bg-zinc-900,
+.admin-root .bg-zinc-950 {
+  background: #f8fafc !important;
+}
+
+.admin-root .border-zinc-800,
+.admin-root .border-zinc-700 {
+  border-color: var(--admin-border) !important;
+}
+
+.admin-link {
+  font-weight: 500;
+  color: #0f766e;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-link:hover {
+  color: #0d9488;
+}
+
+.admin-btn-secondary {
+  display: inline-block;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  color: var(--admin-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+.admin-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.admin-badge {
+  display: inline-block;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.625rem;
+}
+
+.admin-badge--live {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.admin-row-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-toast {
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.admin-toast--success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.admin-toast--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.admin-btn-danger {
+  border-radius: 8px;
+  background: #dc2626;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+.admin-btn-danger:hover {
+  background: #b91c1c;
+}

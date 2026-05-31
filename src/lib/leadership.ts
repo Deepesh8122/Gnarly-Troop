@@ -22,7 +22,9 @@ export type LeadershipItem = {
   alt: string;
   name: string;
   division?: string;
-  section: LeadershipSection;
+  /** Category slug from team_categories */
+  section: string;
+  categoryName?: string;
   region?: string;
   short?: string;
   bio?: string;
@@ -48,12 +50,16 @@ export async function getLeadershipItem(slug: string): Promise<LeadershipItem | 
   return fetchCmsLeadershipMember(slug);
 }
 
-export async function getLeadershipBySection(
-  section: LeadershipSection,
-): Promise<LeadershipItem[]> {
+export async function getLeadershipBySection(section: string): Promise<LeadershipItem[]> {
   if (!useCms()) return [];
   const cms = await fetchCmsLeadership();
   return cms?.bySection[section] ?? [];
+}
+
+export async function getLeadershipByCategories() {
+  if (!useCms()) return null;
+  const { fetchCmsLeadershipByCategories } = await import("@/lib/cms/leadership");
+  return fetchCmsLeadershipByCategories();
 }
 
 export async function getDivisions(): Promise<string[]> {
