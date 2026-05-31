@@ -172,3 +172,94 @@
 .admin-btn-danger:hover {
   background: #b91c1c;
 }
+
+/* Dashboard charts */
+.admin-dash-kpi {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-dash-kpi-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 12px 0 0 12px;
+}
+
+.admin-dash-chart-wrap {
+  height: 200px;
+}
+
+.admin-dash-chart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.admin-dash-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.25rem 0;
+  font-size: 0.65rem;
+  color: var(--admin-muted);
+}
+
+.admin-dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--admin-muted);
+}
+
+.admin-dash-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-dash-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  font-style: normal;
+}
+
+.admin-dash-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.admin-dash-overview-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-dash-overview-label {
+  font-size: 0.65rem;
+  color: var(--admin-muted);
+  white-space: nowrap;
+}
+
+.admin-dash-overview-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 18px;
+}
+
+.admin-dash-overview-bar {
+  display: block;
+  height: 4px;
+  min-width: 2px;
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
