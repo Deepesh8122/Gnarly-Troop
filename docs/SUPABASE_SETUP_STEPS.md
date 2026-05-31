@@ -93,21 +93,27 @@ SET role_id = EXCLUDED.role_id, is_active = true;
 
 ## Step 6 — PhonePe donations
 
-1. PhonePe Business / Developer dashboard → get **Merchant ID**, **Salt Key**, **Salt Index**.
+1. PhonePe Business Dashboard → **Developer Settings** → copy **Client ID**, **Client Secret**, **Client Version**.
 2. Add to `.env.local`:
 
 ```
-PHONEPE_MERCHANT_ID=...
-PHONEPE_SALT_KEY=...
-PHONEPE_SALT_INDEX=1
+PHONEPE_CLIENT_ID=...
+PHONEPE_CLIENT_SECRET=...
+PHONEPE_CLIENT_VERSION=1
 PHONEPE_ENV=sandbox
 ```
 
-3. Whitelist callback URL in PhonePe (if required):
+   Legacy env names (`PHONEPE_MERCHANT_ID`, `PHONEPE_SALT_KEY`, `PHONEPE_SALT_INDEX`) still work if your dashboard labels them that way.
+
+   `PHONEPE_ENV` supports `sandbox`, `staging`, and production aliases like `production`, `prod`, or `live`.
+
+3. Configure webhook in PhonePe (recommended):
 
 ```
 https://yourdomain.com/api/donations/phonepe/callback/
 ```
+
+   Set `PHONEPE_WEBHOOK_USERNAME` and `PHONEPE_WEBHOOK_PASSWORD` to match the dashboard.
 
 4. Test donation: **http://localhost:3000/collaboration/donation/**
 

@@ -1,49 +1,78 @@
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { checkPhonePeStatus, verifyPhonePeCallback } from "@/src/lib/phonepe";
+import {
+  checkPhonePeStatus,
+  getPhonePeTransactionId,
+  isPhonePePaymentSuccessful,
+  verifyPhonePeWebhook,
+} from "@/src/lib/phonepe";
+
+type WebhookPayload = {
+  event?: string;
+  payload?: {
+    merchantOrderId?: string;
+    state?: string;
+    paymentDetails?: Array<{ transactionId?: string }>;
+  };
+};
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const base64Response = body.response as string | undefined;
-    const checksum =
-      request.headers.get("x-verify") ?? request.headers.get("X-VERIFY") ?? "";
-
-    if (base64Response && checksum && !verifyPhonePeCallback(base64Response, checksum)) {
-      return NextResponse.json({ error: "Invalid checksum" }, { status: 401 });
+    const authHeader = request.headers.get("authorization");
+    if (!verifyPhonePeWebhook(authHeader)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let merchantTransactionId: string | undefined;
-    let phonepeState: string | undefined;
-
-    if (base64Response) {
-      const decoded = JSON.parse(Buffer.from(base64Response, "base64").toString("utf8"));
-      merchantTransactionId = decoded?.data?.merchantTransactionId;
-      phonepeState = decoded?.code;
-    }
+    const body = (await request.json()) as WebhookPayload;
+    const merchantTransactionId = body.payload?.merchantOrderId;
+    const webhookState = body.payload?.state;
+    const event = body.event;
 
     if (!merchantTransactionId) {
       return NextResponse.json({ ok: true });
     }
 
     const supabase = createServiceRoleClient();
-    const statusRes = await checkPhonePeStatus(merchantTransactionId);
     const success =
-      statusRes?.code === "PAYMENT_SUCCESS" ||
-      statusRes?.data?.state === "COMPLETED" ||
-      phonepeState === "PAYMENT_SUCCESS";
+      event === "checkout.order.completed" ||
+      webhookState === "COMPLETED" ||
+      (event !== "checkout.order.failed" &&
+        webhookState !== "FAILED" &&
+        isPhonePePaymentSuccessful(body.payload ?? {}));
+
+    const failed = event === "checkout.order.failed" || webhookState === "FAILED";
+
+    let statusRes: Awaited<ReturnType<typeof checkPhonePeStatus>> | null = null;
+    if (!success && !failed) {
+      try {
+        statusRes = await checkPhonePeStatus(merchantTransactionId);
+      } catch (error) {
+        console.error("[PhonePe callback] status check failed", merchantTransactionId, error);
+      }
+    }
+
+    const phonepeTransactionId =
+      body.payload?.paymentDetails?.[0]?.transactionId ??
+      (statusRes ? getPhonePeTransactionId(statusRes) : null);
+
+    const verifiedSuccess =
+      Boolean(phonepeTransactionId) &&
+      (success ||
+        event === "checkout.order.completed" ||
+        webhookState === "COMPLETED" ||
+        (statusRes ? isPhonePePaymentSuccessful(statusRes) : false));
 
     await supabase
       .from("donations")
       .update({
-        status: success ? "success" : "failed",
-        phonepe_transaction_id: statusRes?.data?.transactionId ?? null,
+        status: verifiedSuccess ? "success" : failed ? "failed" : "initiated",
+        phonepe_transaction_id: phonepeTransactionId,
         callback_payload: statusRes ?? body,
         updated_at: new Date().toISOString(),
       })
       .eq("merchant_transaction_id", merchantTransactionId);
 
-    if (success) {
+    if (verifiedSuccess) {
       const { fulfillSuccessfulDonation } = await import("@/lib/donations/fulfill-donation");
       await fulfillSuccessfulDonation(merchantTransactionId);
     }

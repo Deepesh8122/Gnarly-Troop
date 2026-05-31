@@ -5,6 +5,8 @@ import AdminNotConfigured from "@/components/admin/AdminNotConfigured";
 import AdminDashboardCharts from "@/components/admin/AdminDashboardCharts";
 import MigrateStaticButton from "@/components/admin/MigrateStaticButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const [stats, charts] = await Promise.all([
     getAdminDashboardStats(),

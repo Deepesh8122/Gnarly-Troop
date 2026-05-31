@@ -2,19 +2,21 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createPhonePePayment, getPhonePeConfig } from "@/src/lib/phonepe";
-import { getSupabaseEnv } from "@/lib/env";
+import { getSupabaseEnv, resolveSiteUrl } from "@/lib/env";
 
 const bodySchema = z.object({
   tierSlug: z.string().optional(),
   amountPaise: z.number().int().min(100).optional(),
   donorName: z.string().min(2),
   email: z.string().email(),
-  phone: z.string().optional(),
+  phone: z.string().min(10),
   organization: z.string().optional(),
   country: z.string().optional(),
   state: z.string().optional(),
   district: z.string().optional(),
   pinCode: z.string().optional(),
+  /** Browser origin — used when proxy headers are missing; must match request Host. */
+  returnOrigin: z.string().url().optional(),
 });
 
 export async function POST(request: Request) {
@@ -23,7 +25,10 @@ export async function POST(request: Request) {
   }
   if (!getPhonePeConfig()) {
     return NextResponse.json(
-      { error: "PhonePe not configured. Add PHONEPE_MERCHANT_ID and PHONEPE_SALT_KEY to .env.local" },
+      {
+        error:
+          "PhonePe not configured. Add PHONEPE_CLIENT_ID, PHONEPE_CLIENT_SECRET, and PHONEPE_CLIENT_VERSION to .env.local (legacy PHONEPE_MERCHANT_ID / PHONEPE_SALT_KEY also work).",
+      },
       { status: 503 },
     );
   }
@@ -59,12 +64,16 @@ export async function POST(request: Request) {
   }
 
   const merchantTransactionId = `GT${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+  const normalizedPhone = body.phone.replace(/\D/g, "").slice(-10);
+  if (normalizedPhone.length < 10) {
+    return NextResponse.json({ error: "Valid phone is required" }, { status: 400 });
+  }
 
   const { error: insertError } = await supabase.from("donations").insert({
     tier_id: tierId,
     donor_name: body.donorName,
     email: body.email,
-    phone: body.phone?.replace(/\D/g, "").slice(-10) || null,
+    phone: normalizedPhone,
     organization: body.organization,
     country: body.country,
     state: body.state,
@@ -81,13 +90,24 @@ export async function POST(request: Request) {
   }
 
   try {
-    const payment = await createPhonePePayment({
+    const siteUrl = resolveSiteUrl(
+      request,
+      body.returnOrigin ?? request.headers.get("origin"),
+    );
+    const payment = await createPhonePePayment(
+      {
+        merchantTransactionId,
+        amountPaise,
+        userId: body.email,
+        mobileNumber: normalizedPhone,
+      },
+      { siteUrl },
+    );
+    return NextResponse.json({
+      redirectUrl: payment.redirectUrl,
       merchantTransactionId,
-      amountPaise,
-      userId: body.email,
-      mobileNumber: body.phone?.replace(/\D/g, "").slice(-10) || "9999999999",
+      returnUrl: payment.returnUrl,
     });
-    return NextResponse.json({ redirectUrl: payment.redirectUrl, merchantTransactionId });
   } catch (e) {
     await supabase
       .from("donations")
