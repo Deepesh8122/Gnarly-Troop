@@ -14,10 +14,10 @@ import {
   deleteVisionBlockForPillarFormAction,
   saveVisionPillarAction,
 } from "@/lib/admin/actions";
-import { getAdminVisionPillar } from "@/lib/admin/data";
+import { getAdminVisionPillar, adminDb } from "@/lib/admin/data";
 import { getSupabaseEnv } from "@/lib/env";
-import { createServiceRoleClient } from "@/lib/supabase/server";
 import { resolveThumbUrl, visionPillarThumb } from "@/lib/admin/thumbnails";
+import AdminNotConfigured from "@/components/admin/AdminNotConfigured";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -42,7 +42,9 @@ export default async function AdminVisionPillarPage({ params }: Params) {
   const pillar = await getAdminVisionPillar(id);
   if (!pillar) notFound();
 
-  const admin = createServiceRoleClient();
+  const admin = adminDb();
+  if (!admin) notFound();
+
   const { data: blocks } = await admin
     .from("vision_item_blocks")
     .select("id, slug, block_type, title, sort_order, is_enabled, legacy_image_path")
@@ -65,6 +67,7 @@ export default async function AdminVisionPillarPage({ params }: Params) {
 
   return (
     <div className="space-y-8">
+      <AdminNotConfigured />
       <AdminPageHeader
         title={pillar.title}
         description={`Pillar: ${pillar.slug}`}

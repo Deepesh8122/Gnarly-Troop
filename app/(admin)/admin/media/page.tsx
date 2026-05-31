@@ -4,8 +4,7 @@ import type { AdminTableColumn } from "@/components/admin/AdminDataTable";
 import MediaUploadForm from "@/components/admin/MediaUploadForm";
 import ManageBuckets from "@/components/admin/ManageBuckets";
 import { AdminPageHeader } from "@/components/admin/AdminForm";
-import { getAdminMediaList } from "@/lib/admin/data";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { getAdminMediaList, adminDb } from "@/lib/admin/data";
 import { getSupabaseEnv } from "@/lib/env";
 
 export const revalidate = 0;
@@ -23,8 +22,8 @@ export default async function AdminMediaPage() {
   const env = getSupabaseEnv();
 
   let buckets = ["gallery", "team", "partners", "banners", "events", "videos"];
-  try {
-    const admin = createServiceRoleClient();
+  const admin = adminDb();
+  if (admin) {
     const { data: setting } = await admin
       .from("site_settings")
       .select("value")
@@ -34,8 +33,6 @@ export default async function AdminMediaPage() {
     if (setting && Array.isArray(setting.value)) {
       buckets = setting.value.map(String);
     }
-  } catch (err) {
-    console.error("Error loading dynamic media buckets:", err);
   }
 
   const rows = media.map((m) => ({
