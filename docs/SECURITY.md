@@ -7,7 +7,7 @@ This project combines a **public marketing site** and a **private CMS admin** in
 | Asset | Why |
 |--------|-----|
 | `SUPABASE_SERVICE_ROLE_KEY` | Bypasses Row Level Security |
-| `PHONEPE_SALT_KEY`, DB passwords | Full payment / DB access |
+| `PHONEPE_CLIENT_SECRET` / `PHONEPE_SALT_KEY`, DB passwords | Full payment / DB access |
 | `.env.local` | Contains all secrets |
 | `supabase/migrations/`, `seed.sql` | Full database structure & seed data |
 | Admin UI + `/api/admin/*` | CMS attack surface |

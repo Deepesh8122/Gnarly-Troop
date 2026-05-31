@@ -42,8 +42,8 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
 
     if (isCustom) {
       const rupees = Number(customRupees);
-      if (!Number.isFinite(rupees) || rupees < 100) {
-        setError("Please enter an amount of at least Rs. 100.");
+      if (!Number.isFinite(rupees) || rupees < 1) {
+        setError("Please enter an amount of at least Rs. 1.");
         return;
       }
     } else if (!selectedTier) {
@@ -57,6 +57,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
     const payload: Record<string, unknown> = {
       donorName: String(fd.get("donorName")),
       email: String(fd.get("email")),
+      phone: String(fd.get("phone")),
     };
 
     if (isCustom) {
@@ -115,7 +116,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
           >
             <span className={styles.tierAmount}>Custom</span>
             <span className={styles.tierTitle}>Other amount</span>
-            <span className={styles.tierDesc}>From Rs. 100</span>
+            <span className={styles.tierDesc}>From Rs. 1</span>
           </button>
         </div>
 
@@ -127,7 +128,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
                 <span className={styles.rupee}>Rs.</span>
                 <input
                   type="number"
-                  min={100}
+                  min={1}
                   step={1}
                   value={customRupees}
                   onChange={(e) => setCustomRupees(e.target.value)}
@@ -160,6 +161,10 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
         <label className={styles.field}>
           Email *
           <input name="email" type="email" required {...passwordManagerIgnoreAttrs} autoComplete="email" />
+        </label>
+        <label className={styles.field}>
+          Phone *
+          <input name="phone" type="tel" required {...passwordManagerIgnoreAttrs} autoComplete="tel" />
         </label>
       </section>
 

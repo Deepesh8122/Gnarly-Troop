@@ -8,7 +8,8 @@
     "build:public": "ENABLE_ADMIN=false next build",
     "start": "next start",
     "start:public": "ENABLE_ADMIN=false next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@gnarly/lib": "file:packages/lib",
@@ -55,6 +56,7 @@
     "eslint-config-next": "16.0.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.7"
   }
 }

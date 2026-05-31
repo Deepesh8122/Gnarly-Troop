@@ -1,5 +1,9 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { checkPhonePeStatus } from "@/src/lib/phonepe";
+import {
+  checkPhonePeStatus,
+  getPhonePeTransactionId,
+  isPhonePePaymentSuccessful,
+} from "@/src/lib/phonepe";
 import { fulfillSuccessfulDonation } from "@/lib/donations/fulfill-donation";
 
 export async function syncDonationPaymentStatus(merchantTransactionId: string): Promise<{
@@ -25,8 +29,7 @@ export async function syncDonationPaymentStatus(merchantTransactionId: string): 
 
   try {
     const statusRes = await checkPhonePeStatus(merchantTransactionId);
-    const success =
-      statusRes?.code === "PAYMENT_SUCCESS" || statusRes?.data?.state === "COMPLETED";
+    const success = isPhonePePaymentSuccessful(statusRes);
 
     const newStatus = success ? "success" : donation.status === "initiated" ? "initiated" : "failed";
 
@@ -35,7 +38,7 @@ export async function syncDonationPaymentStatus(merchantTransactionId: string): 
         .from("donations")
         .update({
           status: "success",
-          phonepe_transaction_id: statusRes?.data?.transactionId ?? null,
+          phonepe_transaction_id: getPhonePeTransactionId(statusRes),
           callback_payload: statusRes,
           updated_at: new Date().toISOString(),
         })
