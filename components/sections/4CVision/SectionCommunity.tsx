@@ -10,11 +10,28 @@ import {
   largeCards,
   smallCards,
 } from "@/app/data/communityStories";
+import type { VisionPillarPageData } from "@/lib/cms/vision";
+import { mapVisionPillarCards } from "@/lib/4cvision/pillar-cards";
 
-export default function SectionClimate() {
+export default function SectionCommunity({ cmsData }: { cmsData?: VisionPillarPageData | null }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
+
+  const { featured, large, small, pageTitle, pageSubTitle, leads } = mapVisionPillarCards(
+    cmsData,
+    featuredStory,
+    largeCards,
+    smallCards,
+    {
+      pageTitle: "COMMUNITY",
+      pageSubTitle: "EMPOWERING PEOPLE, STRENGTHENING THE NATION",
+      leads: [
+        "True national progress arises from empowered communities, resilient villages, and active citizens...",
+        "Troop Culture—discipline, service, unity, and national pride—forms the foundation...",
+      ],
+    },
+  );
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -37,21 +54,15 @@ export default function SectionClimate() {
           </div>
 
           <center>
-            <h1 className={styles.pageTitle}>COMMUNITY</h1>
-            <h1 className={styles.pageSubTitle}>
-              EMPOWERING PEOPLE, STRENGTHENING THE NATION
-            </h1>
+            <h1 className={styles.pageTitle}>{pageTitle}</h1>
+            <h1 className={styles.pageSubTitle}>{pageSubTitle}</h1>
           </center>
 
-          <p className={styles.lead}>
-            True national progress arises from empowered communities, resilient
-            villages, and active citizens...
-          </p>
-
-          <p className={styles.lead}>
-            Troop Culture—discipline, service, unity, and national pride—forms
-            the foundation...
-          </p>
+          {leads.map((p) => (
+            <p key={p.slice(0, 24)} className={styles.lead}>
+              {p}
+            </p>
+          ))}
 
           <ShareComponent />
 
@@ -86,15 +97,15 @@ export default function SectionClimate() {
             <div className={styles.featuredText}>
               <p className={styles.featuredKicker}>FEATURED ARTICLE</p>
               <h2 className={styles.featuredTitle}>
-                {featuredStory.title}
+                {featured.title}
               </h2>
               <p className={`${styles.featuredBody} ${styles.smallCaptionClamp}`}>
-                {featuredStory.caption}
+                {featured.caption}
               </p>
               <button
                 className={styles.yellowButton}
                 onClick={() =>
-                  router.push(`/4cvision/community/${featuredStory.slug}`)
+                  router.push(`/4cvision/community/${featured.slug}`)
                 }
               >
                 Read Full Story
@@ -103,8 +114,8 @@ export default function SectionClimate() {
 
             <div className={styles.featuredImageWrap}>
               <img
-                src={featuredStory.imageSrc}
-                alt={featuredStory.alt}
+                src={featured.imageSrc}
+                alt={featured.alt}
                 className={styles.featuredImage}
               />
             </div>
@@ -116,7 +127,7 @@ export default function SectionClimate() {
       <section className={styles.articleSection}>
         <div className={styles.inner}>
           <div className={styles.topArticleGrid}>
-            {largeCards.map((card) => (
+            {large.map((card) => (
               <article key={card.id} className={styles.largeArticle}>
                 <div className={styles.largeImageWrap}>
                   <img
@@ -147,7 +158,7 @@ export default function SectionClimate() {
 
           {/* Small cards */}
           <div className={styles.smallGrid}>
-            {smallCards.map((card) => (
+            {small.map((card) => (
               <article key={card.id} className={styles.smallCard}>
                 <div className={styles.smallImageWrap}>
                   <img

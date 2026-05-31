@@ -6,15 +6,32 @@ import styles from "./SectionCooperation.module.css";
 import ShareComponent from "@/components/sections/4CVision/SectionVisionShare";
 
 import {
-  featuredStory,
-  largeCards,
-  smallCards,
+  featuredStory as staticFeatured,
+  largeCards as staticLarge,
+  smallCards as staticSmall,
 } from "@/app/data/cooperationStories";
+import type { VisionPillarPageData } from "@/lib/cms/vision";
+import { mapVisionPillarCards } from "@/lib/4cvision/pillar-cards";
 
-export default function SectionCooperation() {
+export default function SectionCooperation({ cmsData }: { cmsData?: VisionPillarPageData | null }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
+
+  const { featured, large, small, pageTitle, pageSubTitle, leads } = mapVisionPillarCards(
+    cmsData,
+    staticFeatured,
+    staticLarge,
+    staticSmall,
+    {
+      pageTitle: "COOPERATION",
+      pageSubTitle: "BUILDING BRIDGES FOR A NEW WORLD ORDER",
+      leads: [
+        "In a world fractured by conflict, competition, and polarization, cooperation is the moral imperative. Inspired by the Indian principle of Vasudhaiva Kutumbakam – The World is One Family, GTGF fosters unity across nations and institutions.",
+        "Through global partnerships, peace missions, climate dialogues, academic collaborations, and humanitarian initiatives, borders transform into bridges and shared responsibility becomes the pathway to sustainable global progress.",
+      ],
+    },
+  );
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -37,25 +54,15 @@ export default function SectionCooperation() {
           </div>
 
           <center>
-            <h1 className={styles.pageTitle}>COOPERATION</h1>
-            <h1 className={styles.pageSubTitle}>
-              BUILDING BRIDGES FOR A NEW WORLD ORDER
-            </h1>
+            <h1 className={styles.pageTitle}>{pageTitle}</h1>
+            <h1 className={styles.pageSubTitle}>{pageSubTitle}</h1>
           </center>
 
-          <p className={styles.lead}>
-            In a world fractured by conflict, competition, and polarization,
-            cooperation is the moral imperative. Inspired by the Indian principle
-            of “Vasudhaiva Kutumbakam – The World is One Family,” GTGF fosters
-            unity across nations and institutions.
-          </p>
-
-          <p className={styles.lead}>
-            Through global partnerships, peace missions, climate dialogues,
-            academic collaborations, and humanitarian initiatives, borders
-            transform into bridges and shared responsibility becomes the pathway
-            to sustainable global progress.
-          </p>
+          {leads.map((p) => (
+            <p key={p.slice(0, 24)} className={styles.lead}>
+              {p}
+            </p>
+          ))}
 
           <ShareComponent />
 
@@ -90,15 +97,15 @@ export default function SectionCooperation() {
             <div className={styles.featuredText}>
               <p className={styles.featuredKicker}>FEATURED ARTICLE</p>
               <h2 className={styles.featuredTitle}>
-                {featuredStory.title}
+                {featured.title}
               </h2>
               <p className={`${styles.featuredBody} ${styles.smallCaptionClamp}`}>
-                {featuredStory.caption}
+                {featured.caption}
               </p>
               <button
                 className={styles.yellowButton}
                 onClick={() =>
-                  router.push(`/4cvision/cooperation/${featuredStory.slug}`)
+                  router.push(`/4cvision/cooperation/${featured.slug}`)
                 }
               >
                 Read Full Story
@@ -107,8 +114,8 @@ export default function SectionCooperation() {
 
             <div className={styles.featuredImageWrap}>
               <img
-                src={featuredStory.imageSrc}
-                alt={featuredStory.alt}
+                src={featured.imageSrc}
+                alt={featured.alt}
                 className={styles.featuredImage}
               />
             </div>
@@ -120,7 +127,7 @@ export default function SectionCooperation() {
       <section className={styles.articleSection}>
         <div className={styles.inner}>
           <div className={styles.topArticleGrid}>
-            {largeCards.map((card) => (
+            {large.map((card) => (
               <article key={card.id} className={styles.largeArticle}>
                 <div className={styles.largeImageWrap}>
                   <img
@@ -151,7 +158,7 @@ export default function SectionCooperation() {
 
           {/* ================= SMALL CARDS ================= */}
           <div className={styles.smallGrid}>
-            {smallCards.map((card) => (
+            {small.map((card) => (
               <article key={card.id} className={styles.smallCard}>
                 <div className={styles.smallImageWrap}>
                   <img

@@ -6,15 +6,32 @@ import styles from "./SectionCulture.module.css";
 import ShareComponent from "@/components/sections/4CVision/SectionVisionShare";
 
 import {
-  featuredStory,
-  largeCards,
-  smallCards,
+  featuredStory as staticFeatured,
+  largeCards as staticLarge,
+  smallCards as staticSmall,
 } from "@/app/data/cultureStories";
+import type { VisionPillarPageData } from "@/lib/cms/vision";
+import { mapVisionPillarCards } from "@/lib/4cvision/pillar-cards";
 
-export default function SectionCulture() {
+export default function SectionCulture({ cmsData }: { cmsData?: VisionPillarPageData | null }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
+
+  const { featured, large, small, pageTitle, pageSubTitle, leads } = mapVisionPillarCards(
+    cmsData,
+    staticFeatured,
+    staticLarge,
+    staticSmall,
+    {
+      pageTitle: "CULTURE",
+      pageSubTitle: "REVIVING CIVILIZATION, IGNITING IDENTITY",
+      leads: [
+        "Culture is consciousness; it is the essence of civilization, not mere performance. India's heritage spans millennia—from Vedic wisdom to scientific discovery, from spirituality to statecraft.",
+        "Through arts, indigenous knowledge, yoga, Ayurveda, heritage walks, and digital archives, youth become Cultural Custodians, promoting India's wisdom globally.",
+      ],
+    },
+  );
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -37,23 +54,15 @@ export default function SectionCulture() {
           </div>
 
           <center>
-            <h1 className={styles.pageTitle}>CULTURE</h1>
-            <h1 className={styles.pageSubTitle}>
-              REVIVING CIVILIZATION, IGNITING IDENTITY
-            </h1>
+            <h1 className={styles.pageTitle}>{pageTitle}</h1>
+            <h1 className={styles.pageSubTitle}>{pageSubTitle}</h1>
           </center>
 
-          <p className={styles.lead}>
-            Culture is consciousness; it is the essence of civilization, not
-            mere performance. India’s heritage spans millennia—from Vedic wisdom
-            to scientific discovery, from spirituality to statecraft.
-          </p>
-
-          <p className={styles.lead}>
-            Through arts, indigenous knowledge, yoga, Ayurveda, heritage walks,
-            and digital archives, youth become Cultural Custodians, promoting
-            India’s wisdom globally.
-          </p>
+          {leads.map((p) => (
+            <p key={p.slice(0, 24)} className={styles.lead}>
+              {p}
+            </p>
+          ))}
 
           <ShareComponent />
 
@@ -88,15 +97,15 @@ export default function SectionCulture() {
             <div className={styles.featuredText}>
               <p className={styles.featuredKicker}>FEATURED ARTICLE</p>
               <h2 className={styles.featuredTitle}>
-                {featuredStory.title}
+                {featured.title}
               </h2>
               <p className={`${styles.featuredBody} ${styles.smallCaptionClamp}`}>
-                {featuredStory.caption}
+                {featured.caption}
               </p>
               <button
                 className={styles.yellowButton}
                 onClick={() =>
-                  router.push(`/4cvision/culture/${featuredStory.slug}`)
+                  router.push(`/4cvision/culture/${featured.slug}`)
                 }
               >
                 Read Full Story
@@ -105,8 +114,8 @@ export default function SectionCulture() {
 
             <div className={styles.featuredImageWrap}>
               <img
-                src={featuredStory.imageSrc}
-                alt={featuredStory.alt}
+                src={featured.imageSrc}
+                alt={featured.alt}
                 className={styles.featuredImage}
               />
             </div>
@@ -118,7 +127,7 @@ export default function SectionCulture() {
       <section className={styles.articleSection}>
         <div className={styles.inner}>
           <div className={styles.topArticleGrid}>
-            {largeCards.map((card) => (
+            {large.map((card) => (
               <article key={card.id} className={styles.largeArticle}>
                 <div className={styles.largeImageWrap}>
                   <img
@@ -149,7 +158,7 @@ export default function SectionCulture() {
 
           {/* ================= SMALL CARDS ================= */}
           <div className={styles.smallGrid}>
-            {smallCards.map((card) => (
+            {small.map((card) => (
               <article key={card.id} className={styles.smallCard}>
                 <div className={styles.smallImageWrap}>
                   <img

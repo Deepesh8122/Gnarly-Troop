@@ -22,7 +22,48 @@ interface Coord {
   y: number;
 }
 
-export default function SectionVisions() {
+type CmsPillar = {
+  slug: string;
+  title: string;
+  short_description: string | null;
+  theme_color: string | null;
+  detail_page_slug: string | null;
+};
+
+const ICONS: Record<VisionId, typeof Leaf> = {
+  climate: Leaf,
+  community: Users,
+  culture: Globe,
+  cooperation: Handshake,
+};
+
+const COLORS: Record<VisionId, { primary: string; secondary: string }> = {
+  climate: {
+    primary: "var(--vision-climate-primary)",
+    secondary: "var(--vision-climate-secondary)",
+  },
+  community: {
+    primary: "var(--vision-community-primary)",
+    secondary: "var(--vision-community-secondary)",
+  },
+  culture: {
+    primary: "var(--vision-culture-primary)",
+    secondary: "var(--vision-culture-secondary)",
+  },
+  cooperation: {
+    primary: "var(--vision-cooperation-primary)",
+    secondary: "var(--vision-cooperation-secondary)",
+  },
+};
+
+const IMAGES: Record<VisionId, string> = {
+  climate: "https://www.gnarlytroop.org/padharo/climate.png",
+  community: "https://www.gnarlytroop.org/padharo/community.png",
+  culture: "https://www.gnarlytroop.org/padharo/culture.png",
+  cooperation: "https://www.gnarlytroop.org/padharo/cooperation.png",
+};
+
+export default function SectionVisions({ cmsPillars }: { cmsPillars?: CmsPillar[] }) {
   const [activeSection, setActiveSection] = useState<VisionId | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -35,55 +76,31 @@ export default function SectionVisions() {
     router.push(href);
   };
 
-  // --------------------------
-  // Vision Data
-  // --------------------------
-  const visionData: VisionItem[] = [
-    {
-      id: "climate",
-      title: "CLIMATE",
-      icon: Leaf,
-      image: "https://www.gnarlytroop.org/padharo/climate.png",
-      href: "/4cvision/climate",
-      description:
-        "Advocating green living, clean air, and ecosystem conservation through eco-tourism and tree plantation.",
-      primaryColor: "var(--vision-climate-primary)",
-      secondaryColor: "var(--vision-climate-secondary)",
-    },
-    {
-      id: "community",
-      title: "COMMUNITY",
-      icon: Users,
-      image: "https://www.gnarlytroop.org/padharo/community.png",
-      href: "/4cvision/community",
-      description:
-        "Promoting rural empowerment, health, education, and youth development.",
-      primaryColor: "var(--vision-community-primary)",
-      secondaryColor: "var(--vision-community-secondary)",
-    },
-    {
-      id: "culture",
-      title: "CULTURE",
-      icon: Globe,
-      image: "https://www.gnarlytroop.org/padharo/culture.png",
-      href: "/4cvision/culture",
-      description:
-        "Reviving Indian traditions through arts, crafts, cuisines, festivals, and interfaith dialogue.",
-      primaryColor: "var(--vision-culture-primary)",
-      secondaryColor: "var(--vision-culture-secondary)",
-    },
-    {
-      id: "cooperation",
-      title: "COOPERATION",
-      icon: Handshake,
-      image: "https://www.gnarlytroop.org/padharo/cooperation.png",
-      href: "/4cvision/cooperation",
-      description:
-        "Strengthening global harmony through multi-cultural exchanges and international partnerships.",
-      primaryColor: "var(--vision-cooperation-primary)",
-      secondaryColor: "var(--vision-cooperation-secondary)",
-    },
-  ];
+  const visionData: VisionItem[] = cmsPillars?.length
+    ? cmsPillars.map((p) => {
+        const id = p.slug as VisionId;
+        const colors = COLORS[id] ?? COLORS.climate;
+        return {
+          id,
+          title: p.title.toUpperCase(),
+          icon: ICONS[id] ?? Leaf,
+          image: IMAGES[id],
+          href: p.detail_page_slug ?? `/4cvision/${p.slug}`,
+          description: p.short_description ?? "",
+          primaryColor: p.theme_color ?? colors.primary,
+          secondaryColor: colors.secondary,
+        };
+      })
+    : (["climate", "community", "culture", "cooperation"] as VisionId[]).map((id) => ({
+        id,
+        title: id.toUpperCase(),
+        icon: ICONS[id],
+        image: IMAGES[id],
+        href: `/4cvision/${id}`,
+        description: "",
+        primaryColor: COLORS[id].primary,
+        secondaryColor: COLORS[id].secondary,
+      }));
 
   // --------------------------
   // Click Handler
