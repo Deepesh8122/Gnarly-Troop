@@ -9,6 +9,7 @@ import {
   AdminSubmit,
 } from "@/components/admin/AdminForm";
 import { createPageAction } from "@/lib/admin/actions";
+import { PUBLISH_STATUS_OPTIONS_SIMPLE } from "@/lib/cms/publish-state";
 
 export default function AdminNewPagePage() {
   return (
@@ -36,11 +37,8 @@ export default function AdminNewPagePage() {
           <AdminSelect
             label="Status"
             name="status"
-            defaultValue="published"
-            options={[
-              { value: "published", label: "Published" },
-              { value: "draft", label: "Draft" },
-            ]}
+            defaultValue="draft"
+            options={[...PUBLISH_STATUS_OPTIONS_SIMPLE]}
           />
           <AdminRichTextEditor
             name="body_html"

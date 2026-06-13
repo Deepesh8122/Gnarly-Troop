@@ -16,6 +16,7 @@ import {
 } from "@/lib/admin/revalidate";
 import { slugify } from "@/lib/utils/slug";
 import { isAllowedTeamCategorySlug } from "@/lib/team-categories";
+import { normalizePublishStatus, resolvePublishFields } from "@/lib/cms/publish-state";
 
 function adminClient() {
   const env = getSupabaseEnv();
@@ -60,7 +61,7 @@ export async function createPageAction(formData: FormData): Promise<ActionResult
     const title = String(formData.get("title") ?? "").trim();
     const slug =
       String(formData.get("slug") ?? "").trim() || slugify(title);
-    const status = String(formData.get("status") ?? "draft");
+    const status = normalizePublishStatus(formData.get("status"));
     const bodyHtml = String(formData.get("body_html") ?? "").trim();
 
     const { data: page, error } = await supabase
@@ -123,18 +124,30 @@ export async function updatePageAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
-    const { error } = await supabase
+    const status = normalizePublishStatus(formData.get("status"));
+    const { data: existing } = await supabase
       .from("pages")
-      .update({
-        title: String(formData.get("title") ?? ""),
-        slug:
-          String(formData.get("slug") ?? "") ||
-          slugify(String(formData.get("title") ?? "")),
-        status: String(formData.get("status") ?? "draft"),
-        is_home: formData.get("is_home") === "on",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+      .select("published_at")
+      .eq("id", id)
+      .maybeSingle();
+
+    const updatePayload: Record<string, unknown> = {
+      title: String(formData.get("title") ?? ""),
+      slug:
+        String(formData.get("slug") ?? "") ||
+        slugify(String(formData.get("title") ?? "")),
+      status,
+      is_home: formData.get("is_home") === "on",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (status === "published" && !existing?.published_at) {
+      updatePayload.published_at = new Date().toISOString();
+    } else if (status !== "published") {
+      updatePayload.published_at = null;
+    }
+
+    const { error } = await supabase.from("pages").update(updatePayload).eq("id", id);
     if (error) throw error;
     revalidatePublicPaths();
     revalidatePath(`/admin/pages/${id}`);
@@ -254,7 +267,7 @@ export async function saveEventAction(
       location: String(formData.get("location") ?? "") || null,
       starts_at: String(formData.get("starts_at") ?? "") || null,
       ends_at: String(formData.get("ends_at") ?? "") || null,
-      status: String(formData.get("status") ?? "draft"),
+      status: normalizePublishStatus(formData.get("status")),
       registration_enabled: formData.get("registration_enabled") === "on",
       is_featured: formData.get("is_featured") === "on",
       banner_media_id:
@@ -334,6 +347,8 @@ export async function saveTeamMemberAction(
       }
     }
 
+    const publish = resolvePublishFields(formData);
+
     const payload: Record<string, unknown> = {
       category_id: String(formData.get("category_id") ?? ""),
       slug:
@@ -355,8 +370,8 @@ export async function saveTeamMemberAction(
         String(formData.get("profile_legacy_path") ?? formData.get("legacy_image_path") ?? "") ||
         null,
       sort_order: Number(formData.get("sort_order") ?? 0),
-      status: String(formData.get("status") ?? "published"),
-      is_enabled: formData.get("is_enabled") === "on",
+      status: publish.status,
+      is_enabled: publish.is_enabled,
       updated_at: new Date().toISOString(),
     };
 
@@ -560,6 +575,8 @@ export async function saveCollaborationPartnerAction(
         String(formData.get("slug") ?? "") || slugify(String(formData.get("name") ?? "")),
     };
 
+    const publish = resolvePublishFields(formData);
+
     const payload = {
       category_id: String(formData.get("category_id") ?? "") || null,
       slug:
@@ -578,8 +595,8 @@ export async function saveCollaborationPartnerAction(
         null,
       detail_content: detailContent,
       sort_order: Number(formData.get("sort_order") ?? 0),
-      status: String(formData.get("status") ?? "published"),
-      is_enabled: formData.get("is_enabled") === "on",
+      status: publish.status,
+      is_enabled: publish.is_enabled,
       updated_at: new Date().toISOString(),
     };
 
@@ -659,14 +676,15 @@ export async function saveGalleryAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
+    const publish = resolvePublishFields(formData);
     const payload = {
       slug:
         String(formData.get("slug") ?? "") || slugify(String(formData.get("title") ?? "")),
       title: String(formData.get("title") ?? ""),
       description: String(formData.get("description") ?? "") || null,
       category: String(formData.get("category") ?? "") || null,
-      status: String(formData.get("status") ?? "published"),
-      is_enabled: formData.get("is_enabled") === "on",
+      status: publish.status,
+      is_enabled: publish.is_enabled,
       sort_order: Number(formData.get("sort_order") ?? 0),
       cover_media_id:
         String(formData.get("cover_media_id") ?? formData.get("gallery_media_id") ?? "") || null,
@@ -848,6 +866,8 @@ export async function saveVisionPillarAction(
     const coverMediaId =
       String(formData.get("cover_media_id") ?? formData.get("pillar_media_id") ?? "") || null;
 
+    const publish = resolvePublishFields(formData);
+
     const { error } = await supabase
       .from("vision_items")
       .update({
@@ -855,8 +875,8 @@ export async function saveVisionPillarAction(
         subtitle: String(formData.get("subtitle") ?? "") || null,
         short_description: String(formData.get("short_description") ?? "") || null,
         cover_media_id: coverMediaId,
-        status: String(formData.get("status") ?? "published"),
-        is_enabled: formData.get("is_enabled") === "on",
+        status: publish.status,
+        is_enabled: publish.is_enabled,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id);

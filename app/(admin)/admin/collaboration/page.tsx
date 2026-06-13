@@ -18,7 +18,7 @@ const columns: AdminTableColumn[] = [
   { key: "slug", header: "Slug", format: "mono" },
   { key: "category", header: "Category" },
   { key: "status", header: "Status" },
-  { key: "is_enabled", header: "Live", format: "badge-live" },
+  { key: "is_live", header: "Live on site", format: "badge-live" },
 ];
 
 export default async function AdminCollaborationPage() {
@@ -50,7 +50,7 @@ export default async function AdminCollaborationPage() {
         columns={columns}
         emptyMessage="No partners — import from Dashboard or add manually"
         searchKeys={["name", "slug", "category", "status"]}
-        statusFilterKey="status"
+        statusFilterKey="status_raw"
         deleteAction={deleteCollaborationPartnerFormAction}
         deleteEntityLabel="partner"
       />

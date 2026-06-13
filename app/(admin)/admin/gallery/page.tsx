@@ -17,7 +17,7 @@ const columns: AdminTableColumn[] = [
   },
   { key: "slug", header: "Slug", format: "mono" },
   { key: "status", header: "Status" },
-  { key: "is_enabled", header: "Live", format: "badge-live" },
+  { key: "is_live", header: "Live on site", format: "badge-live" },
 ];
 
 export default async function AdminGalleryPage() {
@@ -41,7 +41,7 @@ export default async function AdminGalleryPage() {
         columns={columns}
         emptyMessage="No galleries yet"
         searchKeys={["title", "slug", "status"]}
-        statusFilterKey="status"
+        statusFilterKey="status_raw"
         deleteAction={deleteGalleryFormAction}
         deleteEntityLabel="gallery"
       />

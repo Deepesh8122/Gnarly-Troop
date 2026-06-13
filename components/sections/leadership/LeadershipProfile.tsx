@@ -72,8 +72,8 @@ export default function LeadershipProfile({ person }: Props) {
         )}
 
         <section className={styles.bio} aria-label="Biography">
-          {paragraphs.map((para) => (
-            <p key={para.slice(0, 40)}>{para}</p>
+          {paragraphs.map((para, index) => (
+            <p key={`${person.slug}-bio-${index}`}>{para}</p>
           ))}
         </section>
 

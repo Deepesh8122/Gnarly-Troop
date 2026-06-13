@@ -1,4 +1,5 @@
 import { resolveThumbUrl, type ThumbSource } from "@/lib/admin/thumbnails";
+import { isLiveOnSite, normalizePublishStatus, publishStatusLabel } from "@/lib/cms/publish-state";
 
 function categoryName(cat: unknown): string {
   if (!cat) return "—";
@@ -19,8 +20,9 @@ export function mapLeadershipTableRows(team: Record<string, unknown>[]) {
     full_name: String(m.full_name),
     designation: String(m.designation),
     category: categoryName(m.team_categories),
-    status: String(m.status),
-    is_enabled: Boolean(m.is_enabled),
+    status: publishStatusLabel(m.status),
+    status_raw: String(m.status),
+    is_live: isLiveOnSite({ status: String(m.status), is_enabled: m.is_enabled }),
   }));
 }
 
@@ -37,8 +39,9 @@ export function mapCollaborationTableRows(partners: Record<string, unknown>[]) {
     name: String(p.name),
     slug: String(p.slug),
     category: categoryName(p.collaboration_categories),
-    status: String(p.status),
-    is_enabled: Boolean(p.is_enabled),
+    status: publishStatusLabel(p.status),
+    status_raw: String(p.status),
+    is_live: isLiveOnSite({ status: String(p.status), is_enabled: p.is_enabled }),
   }));
 }
 
@@ -48,7 +51,9 @@ export function mapEventsTableRows(events: Record<string, unknown>[]) {
     thumbUrl: resolveThumbUrl({ media: e.banner as ThumbSource["media"] }, "/images/sections/pm-img.png"),
     title: String(e.title),
     slug: String(e.slug),
-    status: String(e.status),
+    status: publishStatusLabel(e.status),
+    status_raw: String(e.status),
+    is_live: normalizePublishStatus(String(e.status)) === "published",
     starts_at: e.starts_at as string | null,
   }));
 }
@@ -62,8 +67,9 @@ export function mapGalleriesTableRows(galleries: Record<string, unknown>[]) {
     ),
     title: String(g.title),
     slug: String(g.slug),
-    status: String(g.status),
-    is_enabled: Boolean(g.is_enabled),
+    status: publishStatusLabel(g.status),
+    status_raw: String(g.status),
+    is_live: isLiveOnSite({ status: String(g.status), is_enabled: g.is_enabled }),
   }));
 }
 
@@ -81,7 +87,9 @@ export function mapPagesTableRows(
     thumbUrl: p.is_home ? "/images/sections/founder-img.png" : `/images/logos/logo-2.png`,
     title: p.title,
     slug: `/${p.slug}`,
-    status: p.status,
+    status: publishStatusLabel(p.status),
+    status_raw: p.status,
+    is_live: normalizePublishStatus(p.status) === "published",
     is_home: p.is_home,
   }));
 }
