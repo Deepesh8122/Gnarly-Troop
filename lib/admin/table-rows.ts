@@ -7,6 +7,12 @@ function categoryName(cat: unknown): string {
   return (cat as { name?: string }).name ?? "—";
 }
 
+function asOptionalBoolean(value: unknown): boolean | null | undefined {
+  if (value === true || value === false) return value;
+  if (value === null || value === undefined) return value;
+  return Boolean(value);
+}
+
 export function mapLeadershipTableRows(team: Record<string, unknown>[]) {
   return team.map((m) => ({
     id: String(m.id),
@@ -22,7 +28,7 @@ export function mapLeadershipTableRows(team: Record<string, unknown>[]) {
     category: categoryName(m.team_categories),
     status: publishStatusLabel(m.status),
     status_raw: String(m.status),
-    is_live: isLiveOnSite({ status: String(m.status), is_enabled: m.is_enabled }),
+    is_live: isLiveOnSite({ status: String(m.status), is_enabled: asOptionalBoolean(m.is_enabled) }),
   }));
 }
 
@@ -41,7 +47,7 @@ export function mapCollaborationTableRows(partners: Record<string, unknown>[]) {
     category: categoryName(p.collaboration_categories),
     status: publishStatusLabel(p.status),
     status_raw: String(p.status),
-    is_live: isLiveOnSite({ status: String(p.status), is_enabled: p.is_enabled }),
+    is_live: isLiveOnSite({ status: String(p.status), is_enabled: asOptionalBoolean(p.is_enabled) }),
   }));
 }
 
@@ -69,7 +75,7 @@ export function mapGalleriesTableRows(galleries: Record<string, unknown>[]) {
     slug: String(g.slug),
     status: publishStatusLabel(g.status),
     status_raw: String(g.status),
-    is_live: isLiveOnSite({ status: String(g.status), is_enabled: g.is_enabled }),
+    is_live: isLiveOnSite({ status: String(g.status), is_enabled: asOptionalBoolean(g.is_enabled) }),
   }));
 }
 
