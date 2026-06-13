@@ -14,6 +14,7 @@ import {
 import { getAdminPage, getAdminPageSections } from "@/lib/admin/data";
 import { addPageSectionFormAction, togglePageSectionFormAction, updatePageAction } from "@/lib/admin/actions";
 import { pageThumb, sectionThumbFromContent } from "@/lib/admin/thumbnails";
+import { PUBLISH_STATUS_OPTIONS } from "@/lib/cms/publish-state";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -100,11 +101,7 @@ export default async function AdminPageEditPage({ params }: Params) {
               label="Status"
               name="status"
               defaultValue={page.status}
-              options={[
-                { value: "draft", label: "Draft" },
-                { value: "published", label: "Published" },
-                { value: "archived", label: "Archived" },
-              ]}
+              options={[...PUBLISH_STATUS_OPTIONS]}
             />
             <div className="flex items-end">
               <AdminCheckbox name="is_home" label="Homepage" defaultChecked={page.is_home} />
