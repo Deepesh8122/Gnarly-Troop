@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminDataTable, { type AdminTableColumn } from "@/components/admin/AdminDataTable";
 import {
-  AdminCheckbox,
   AdminForm,
   AdminInput,
   AdminPageHeader,
@@ -18,6 +17,7 @@ import { getAdminVisionPillar, adminDb } from "@/lib/admin/data";
 import { getSupabaseEnv } from "@/lib/env";
 import { resolveThumbUrl, visionPillarThumb } from "@/lib/admin/thumbnails";
 import AdminNotConfigured from "@/components/admin/AdminNotConfigured";
+import { PUBLISH_STATUS_OPTIONS_SIMPLE } from "@/lib/cms/publish-state";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -103,12 +103,8 @@ export default async function AdminVisionPillarPage({ params }: Params) {
             label="Status"
             name="status"
             defaultValue={pillar.status ?? "published"}
-            options={[
-              { value: "published", label: "Published" },
-              { value: "draft", label: "Draft" },
-            ]}
+            options={[...PUBLISH_STATUS_OPTIONS_SIMPLE]}
           />
-          <AdminCheckbox name="is_enabled" label="Enabled on site" defaultChecked={pillar.is_enabled} />
           <AdminSubmit />
         </AdminForm>
       </section>

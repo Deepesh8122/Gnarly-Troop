@@ -3,11 +3,13 @@ import type { MediaAsset } from "@gnarly/types";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 
 export function getPublicMediaUrl(asset: Pick<MediaAsset, "bucket" | "storage_path">): string {
-  if (asset.bucket === "site" || asset.storage_path.startsWith("/")) {
-    return asset.storage_path.startsWith("/") ? asset.storage_path : `/${asset.storage_path}`;
+  const path = asset.storage_path ?? "";
+  if (!path) return "/images/logos/logo-2.png";
+  if (asset.bucket === "site" || path.startsWith("/")) {
+    return path.startsWith("/") ? path : `/${path}`;
   }
-  if (!SUPABASE_URL) return `/${asset.storage_path}`;
-  return `${SUPABASE_URL}/storage/v1/object/public/${asset.bucket}/${asset.storage_path}`;
+  if (!SUPABASE_URL) return `/${path}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/${asset.bucket}/${path}`;
 }
 
 export function mapMediaRow(row: {

@@ -3,7 +3,6 @@ import AdminNotConfigured from "@/components/admin/AdminNotConfigured";
 import AdminCollaborationDetailEditor from "@/components/admin/AdminCollaborationDetailEditor";
 import AdminRichTextEditor from "@/components/admin/AdminRichTextEditor";
 import {
-  AdminCheckbox,
   AdminForm,
   AdminInput,
   AdminPageHeader,
@@ -14,6 +13,7 @@ import { getAdminCollaborationCategories } from "@/lib/admin/data";
 import { saveCollaborationPartnerAction } from "@/lib/admin/actions";
 import MediaPicker from "@/components/admin/MediaPicker";
 import AdminSlugField from "@/components/admin/AdminSlugField";
+import { PUBLISH_STATUS_OPTIONS_SIMPLE } from "@/lib/cms/publish-state";
 
 export default async function AdminCollaborationNewPage() {
   const categories = await getAdminCollaborationCategories();
@@ -49,11 +49,8 @@ export default async function AdminCollaborationNewPage() {
             <AdminSelect
               label="Status"
               name="status"
-              defaultValue="published"
-              options={[
-                { value: "published", label: "Published" },
-                { value: "draft", label: "Draft" },
-              ]}
+              defaultValue="draft"
+              options={[...PUBLISH_STATUS_OPTIONS_SIMPLE]}
             />
           </div>
           <AdminRichTextEditor name="short_description" label="Short description" bucket="partners" minimal />
@@ -64,7 +61,6 @@ export default async function AdminCollaborationNewPage() {
             <AdminCollaborationDetailEditor detail={{}} partnerName="New partner" />
           </div>
 
-          <AdminCheckbox name="is_enabled" label="Show on website" defaultChecked />
           <AdminSubmit label="Create partner" />
         </AdminForm>
       </section>

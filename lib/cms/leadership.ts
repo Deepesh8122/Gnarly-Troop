@@ -30,7 +30,11 @@ type MemberRow = {
     bucket: string;
     storage_path: string;
     alt_text?: string | null;
-  } | null;
+  } | {
+    bucket: string;
+    storage_path: string;
+    alt_text?: string | null;
+  }[] | null;
   articles: {
     title: string;
     excerpt: string | null;
@@ -48,34 +52,47 @@ function normalizeCategory(
   return cat;
 }
 
+function normalizeImage(
+  image: MemberRow["image"] | MemberRow["image"][] | null | undefined,
+): { bucket: string; storage_path: string; alt_text?: string | null } | null {
+  if (!image) return null;
+  const row = Array.isArray(image) ? image[0] : image;
+  if (!row?.storage_path) return null;
+  return row;
+}
+
 function imageSrc(row: MemberRow): string {
   if (row.legacy_image_path) {
     return row.legacy_image_path.startsWith("/")
       ? row.legacy_image_path
       : `/${row.legacy_image_path}`;
   }
-  if (row.image) {
-    if (row.image.bucket === "site" || row.image.storage_path.startsWith("/")) {
-      return row.image.storage_path.startsWith("/")
-        ? row.image.storage_path
-        : `/${row.image.storage_path}`;
+
+  const image = normalizeImage(row.image);
+  if (image) {
+    if (image.bucket === "site" || image.storage_path.startsWith("/")) {
+      return image.storage_path.startsWith("/")
+        ? image.storage_path
+        : `/${image.storage_path}`;
     }
-    return getPublicMediaUrl(row.image);
+    return getPublicMediaUrl(image);
   }
+
   return "/images/logos/logo-2.png";
 }
 
 function mapMember(row: MemberRow): LeadershipItem {
   const paragraphs = Array.isArray(row.bio_paragraphs)
-    ? (row.bio_paragraphs as string[])
+    ? (row.bio_paragraphs as string[]).filter((p) => typeof p === "string" && p.trim())
     : [];
   const cat = normalizeCategory(row.team_categories);
   const sectionSlug = cat?.slug ?? "leaders";
+  const image = normalizeImage(row.image);
 
   return {
     slug: row.slug,
     src: imageSrc(row),
-    filename: row.image?.storage_path ?? "",
+    filename: image?.storage_path ?? "",
     title: row.designation,
     alt: row.full_name,
     name: row.full_name,
@@ -97,6 +114,15 @@ function mapMember(row: MemberRow): LeadershipItem {
         type: (a.article_type as "Article" | "Video" | "Story") ?? "Article",
       })),
   };
+}
+
+function safeMapMember(row: MemberRow): LeadershipItem | null {
+  try {
+    return mapMember(row);
+  } catch (error) {
+    console.error("[mapMember]", row.slug, error);
+    return null;
+  }
 }
 
 function stripHtml(html: string | null): string | undefined {
@@ -174,7 +200,8 @@ export async function fetchCmsLeadershipByCategories(): Promise<{
   if (!memberRows?.length) return null;
 
   const members = (memberRows as MemberRow[])
-    .map(mapMember)
+    .map(safeMapMember)
+    .filter((m): m is LeadershipItem => m !== null)
     .filter((m) => isAllowedTeamCategorySlug(m.section));
   const divisions = new Set<string>();
   const regions = new Set<string>();
@@ -226,19 +253,29 @@ export async function fetchCmsLeadershipMember(
 ): Promise<LeadershipItem | null> {
   if (!(await hasCmsLeadership())) return null;
 
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("team_members")
-    .select(
-      `*, team_categories(slug, name, display_style, sort_order),
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from("team_members")
+      .select(
+        `*, team_categories(slug, name, display_style, sort_order),
        image:media_library!team_members_image_media_id_fkey(bucket, storage_path, alt_text),
        articles:team_member_articles(*)`,
-    )
-    .eq("slug", slug)
-    .eq("status", "published")
-    .eq("is_enabled", true)
-    .maybeSingle();
+      )
+      .eq("slug", slug)
+      .eq("status", "published")
+      .eq("is_enabled", true)
+      .maybeSingle();
 
-  if (!data) return null;
-  return mapMember(data as MemberRow);
+    if (error) {
+      console.error("[fetchCmsLeadershipMember]", slug, error.message);
+      return null;
+    }
+
+    if (!data) return null;
+    return safeMapMember(data as MemberRow);
+  } catch (error) {
+    console.error("[fetchCmsLeadershipMember]", slug, error);
+    return null;
+  }
 }

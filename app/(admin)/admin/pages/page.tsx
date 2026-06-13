@@ -16,6 +16,7 @@ const columns: AdminTableColumn[] = [
   },
   { key: "slug", header: "Slug", format: "mono" },
   { key: "status", header: "Status" },
+  { key: "is_live", header: "Live on site", format: "badge-live" },
 ];
 
 export default async function AdminPagesPage() {
@@ -50,7 +51,7 @@ export default async function AdminPagesPage() {
         columns={columns}
         emptyMessage="No pages — run supabase/seed.sql"
         searchKeys={["title", "slug", "status"]}
-        statusFilterKey="status"
+        statusFilterKey="status_raw"
       />
     </div>
   );
