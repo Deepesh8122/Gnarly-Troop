@@ -53,7 +53,7 @@ function normalizeCategory(
 }
 
 function normalizeImage(
-  image: MemberRow["image"] | MemberRow["image"][] | null | undefined,
+  image: MemberRow["image"],
 ): { bucket: string; storage_path: string; alt_text?: string | null } | null {
   if (!image) return null;
   const row = Array.isArray(image) ? image[0] : image;
