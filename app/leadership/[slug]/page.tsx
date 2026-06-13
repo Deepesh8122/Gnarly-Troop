@@ -8,6 +8,7 @@ import {
 } from "@/src/lib/leadership";
 
 export const revalidate = 60;
+export const dynamicParams = true;
 
 type Params = { params: Promise<{ slug: string }> };
 

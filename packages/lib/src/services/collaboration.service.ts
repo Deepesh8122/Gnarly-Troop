@@ -1,9 +1,9 @@
 import type { CollaborationPartner } from "@gnarly/types";
 import { mapMediaRow } from "../media/resolve-url";
-import { createServerSupabaseClient } from "../supabase/server";
+import { createPublicSupabaseClient } from "../supabase/server";
 
 export async function getCollaborationPartners() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   const { data } = await supabase
     .from("collaboration_partners")
@@ -22,7 +22,7 @@ export async function getCollaborationPartners() {
 export async function getCollaborationPartnerBySlug(
   slug: string,
 ): Promise<CollaborationPartner | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   const { data, error } = await supabase
     .from("collaboration_partners")

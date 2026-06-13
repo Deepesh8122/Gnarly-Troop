@@ -1,5 +1,5 @@
-import { getSupabaseEnv } from "@/lib/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isPublicCmsConfigured } from "@/lib/cms/public-read";
+import { createPublicSupabaseClient } from "@/lib/supabase/server";
 import { getPublicMediaUrl } from "@gnarly/lib";
 
 export type VisionPillar = {
@@ -59,8 +59,8 @@ function imageFromRow(row: {
 }
 
 export async function getVisionPillars(): Promise<VisionPillar[]> {
-  if (!getSupabaseEnv().configured) return [];
-  const supabase = await createServerSupabaseClient();
+  if (!isPublicCmsConfigured()) return [];
+  const supabase = createPublicSupabaseClient();
   const { data } = await supabase
     .from("vision_items")
     .select(
@@ -85,8 +85,8 @@ export async function getVisionPillars(): Promise<VisionPillar[]> {
 }
 
 export async function getVisionPillarPage(slug: string): Promise<VisionPillarPageData | null> {
-  if (!getSupabaseEnv().configured) return null;
-  const supabase = await createServerSupabaseClient();
+  if (!isPublicCmsConfigured()) return null;
+  const supabase = createPublicSupabaseClient();
 
   const { data: pillar } = await supabase
     .from("vision_items")

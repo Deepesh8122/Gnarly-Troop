@@ -114,3 +114,52 @@ ON CONFLICT (slug) DO NOTHING;
 -- Legacy image paths for content import (no media_library insert required)
 ALTER TABLE team_members ADD COLUMN IF NOT EXISTS legacy_image_path TEXT;
 ALTER TABLE collaboration_partners ADD COLUMN IF NOT EXISTS legacy_image_path TEXT;
+
+-- ----- Public CMS read policies (anonymous visitors, no admin login) -----
+-- Full file: supabase/migrations/20260601200000_public_cms_read_policies.sql
+DO $$ BEGIN
+  CREATE POLICY "public_read_site_settings" ON site_settings FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "public_read_team_member_articles" ON team_member_articles FOR SELECT
+    USING (
+      (
+        is_enabled = true
+        AND EXISTS (
+          SELECT 1 FROM team_members tm
+          WHERE tm.id = team_member_articles.team_member_id
+            AND tm.status = 'published' AND tm.is_enabled = true
+        )
+      ) OR is_admin()
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "public_read_vision_item_blocks" ON vision_item_blocks FOR SELECT
+    USING (
+      (
+        is_enabled = true
+        AND EXISTS (
+          SELECT 1 FROM vision_items vi
+          WHERE vi.id = vision_item_blocks.vision_item_id
+            AND vi.status = 'published' AND vi.is_enabled = true
+        )
+      ) OR is_admin()
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "public_read_collab_partner_gallery" ON collaboration_partner_gallery FOR SELECT
+    USING (
+      EXISTS (
+        SELECT 1 FROM collaboration_partners cp
+        WHERE cp.id = collaboration_partner_gallery.partner_id
+          AND cp.status = 'published' AND cp.is_enabled = true
+      ) OR is_admin()
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

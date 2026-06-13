@@ -1,5 +1,5 @@
-import { getSupabaseEnv } from "@/lib/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isPublicCmsConfigured } from "@/lib/cms/public-read";
+import { createPublicSupabaseClient } from "@/lib/supabase/server";
 
 export type NavMenuItem = {
   id: string;
@@ -11,9 +11,9 @@ export type NavMenuItem = {
 export async function getNavigationByMenuSlug(
   menuSlug: string,
 ): Promise<NavMenuItem[]> {
-  if (!getSupabaseEnv().configured) return [];
+  if (!isPublicCmsConfigured()) return [];
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
   const { data: menu } = await supabase
     .from("navigation_menus")
     .select("id")

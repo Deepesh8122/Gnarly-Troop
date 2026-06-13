@@ -5,6 +5,14 @@ import { assertSupabaseEnv, getSupabaseEnv } from "@/lib/env";
 import { assertAdminDeployEnabled } from "@/lib/deploy-security";
 import { assertServiceRoleKey } from "@/lib/supabase/service-role";
 
+/** Anonymous client for public CMS reads — never uses admin session cookies. */
+export function createPublicSupabaseClient() {
+  const { url, anonKey } = assertSupabaseEnv();
+  return createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
 export async function createServerSupabaseClient() {
   const { url, anonKey } = assertSupabaseEnv();
   const cookieStore = await cookies();
