@@ -28,6 +28,16 @@ export default async function AdminCollaborationPage() {
   return (
     <div className="space-y-6">
       <AdminNotConfigured />
+      <section className="admin-card border-teal-100 bg-teal-50/50 p-5">
+        <p className="text-sm font-semibold text-teal-900">Collaboration landing page</p>
+        <p className="mt-1 text-sm text-slate-600">
+          Edit hero, mission quote, yellow band, achievement, tracking pillars, and section
+          visibility for <code className="text-xs">/collaboration/</code>.
+        </p>
+        <Link href="/admin/collaboration/landing/" className="admin-btn-primary mt-3 inline-block text-sm">
+          Open landing editor →
+        </Link>
+      </section>
       <AdminPageHeader
         title="Collaboration"
         description="Partners shown on /collaboration and profile pages."

@@ -11,6 +11,7 @@ const NAV = [
   { label: "Team Members", href: "/admin/leadership/", icon: "👥" },
   { label: "Team Categories", href: "/admin/leadership/categories/", icon: "🏷" },
   { label: "Collaboration", href: "/admin/collaboration/", icon: "🤝" },
+  { label: "Collaboration page", href: "/admin/collaboration/landing/", icon: "📄" },
   { label: "Events", href: "/admin/events/", icon: "📅" },
   { label: "Registrations", href: "/admin/registrations/", icon: "🎫" },
   { label: "Gallery", href: "/admin/gallery/", icon: "🖼" },
@@ -40,7 +41,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   function isActive(href: string) {
     if (href === "/admin/") return pathname === "/admin" || pathname === "/admin/";
-    return pathname?.startsWith(href.replace(/\/$/, ""));
+    const base = href.replace(/\/$/, "");
+    if (!pathname?.startsWith(base)) return false;
+    if (href === "/admin/collaboration/" && pathname?.startsWith("/admin/collaboration/landing")) {
+      return false;
+    }
+    return true;
   }
 
   return (

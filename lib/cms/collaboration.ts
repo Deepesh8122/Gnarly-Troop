@@ -1,10 +1,11 @@
 import type {
   CollaborationDetail,
   CollaborationInitiative,
+  CollaborationLandingContent,
 } from "@/src/data/collaborationData";
-import { collaborationLanding as staticLanding } from "@/src/data/collaborationData";
 import { createPublicSupabaseClient } from "@/lib/supabase/server";
 import { isPublicCmsConfigured } from "@/lib/cms/public-read";
+import { normalizeCollaborationLanding } from "@/lib/cms/normalizeCollaborationLanding";
 import { getPublicMediaUrl } from "@gnarly/lib";
 
 function normalizePartnerLogo(
@@ -55,10 +56,9 @@ export async function hasCmsCollaboration(): Promise<boolean> {
   }
 }
 
-export async function fetchCollaborationLanding(): Promise<
-  typeof staticLanding | null
-> {
+export async function fetchCollaborationLanding(): Promise<CollaborationLandingContent | null> {
   if (!isPublicCmsConfigured()) return null;
+
   const supabase = createPublicSupabaseClient();
   const { data, error } = await supabase
     .from("site_settings")
@@ -68,11 +68,14 @@ export async function fetchCollaborationLanding(): Promise<
 
   if (error) {
     console.error("[fetchCollaborationLanding]", error.message);
-    return null;
+    return normalizeCollaborationLanding({});
   }
 
-  if (!data?.value || typeof data.value !== "object") return null;
-  return data.value as typeof staticLanding;
+  if (!data?.value || typeof data.value !== "object") {
+    return normalizeCollaborationLanding({});
+  }
+
+  return normalizeCollaborationLanding(data.value as Partial<CollaborationLandingContent>);
 }
 
 export async function fetchCmsCollaborationInitiatives(): Promise<
@@ -84,7 +87,7 @@ export async function fetchCmsCollaborationInitiatives(): Promise<
   const { data, error } = await supabase
     .from("collaboration_partners")
     .select(
-      "slug, name, short_description, legacy_image_path, logo:media_library!collaboration_partners_logo_media_id_fkey(bucket, storage_path)",
+      "slug, name, short_description, legacy_image_path, logo:media_library!collaboration_partners_logo_media_id_fkey(bucket, storage_path), collaboration_categories(slug, name)",
     )
     .eq("status", "published")
     .eq("is_enabled", true)
@@ -99,12 +102,17 @@ export async function fetchCmsCollaborationInitiatives(): Promise<
 
   return data.map((p) => {
     const logo = normalizePartnerLogo(p.logo);
+    const cat = Array.isArray(p.collaboration_categories)
+      ? p.collaboration_categories[0]
+      : p.collaboration_categories;
     return {
       slug: p.slug,
       title: p.name,
       excerpt: p.short_description ?? "",
       imageSrc: partnerImageSrc({ legacy_image_path: p.legacy_image_path, logo }),
       alt: p.name,
+      categorySlug: cat?.slug ?? null,
+      categoryName: cat?.name ?? null,
     };
   });
 }

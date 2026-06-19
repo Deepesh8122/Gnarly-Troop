@@ -18,13 +18,13 @@ export default function ScrollReveal({
   direction = "up",
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-60px 0px", amount: 0.2 });
 
   const offset =
     direction === "left"
-      ? { x: -48, y: 0 }
+      ? { x: -56, y: 0 }
       : direction === "right"
-        ? { x: 48, y: 0 }
+        ? { x: 56, y: 0 }
         : { x: 0, y: 40 };
 
   return (
@@ -33,7 +33,7 @@ export default function ScrollReveal({
       className={className}
       initial={{ opacity: 0, ...offset }}
       animate={inView ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, ...offset }}
-      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>

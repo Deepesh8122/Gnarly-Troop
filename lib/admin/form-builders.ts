@@ -72,9 +72,22 @@ export function buildCollaborationLanding(formData: FormData) {
     paragraphs: paragraphs(str(formData, `narrative_${i}_paragraphs`)),
     imageSrc: str(formData, `narrative_${i}_imageSrc`),
     imageOnRight: bool(formData, `narrative_${i}_imageOnRight`),
+    ctaLabel: str(formData, `narrative_${i}_ctaLabel`),
+    ctaHref: str(formData, `narrative_${i}_ctaHref`),
+    enabled: bool(formData, `narrative_${i}_enabled`),
   }));
 
   return {
+    sections: {
+      hero: bool(formData, "section_hero_enabled"),
+      mission: bool(formData, "section_mission_enabled"),
+      narratives: bool(formData, "section_narratives_enabled"),
+      highlight: bool(formData, "section_highlight_enabled"),
+      achievement: bool(formData, "section_achievement_enabled"),
+      tracking: bool(formData, "section_tracking_enabled"),
+      roadTo2045: bool(formData, "section_road_enabled"),
+      progressInAction: bool(formData, "section_progress_enabled"),
+    },
     heroVideo: str(formData, "heroVideo") || "/hero.mp4",
     heroPoster: str(formData, "heroPoster"),
     heroLabel: str(formData, "heroLabel"),
@@ -84,24 +97,39 @@ export function buildCollaborationLanding(formData: FormData) {
     heroCtaHref: str(formData, "heroCtaHref"),
     missionQuote: str(formData, "missionQuote"),
     missionAttr: str(formData, "missionAttr"),
+    missionLinkLabel: str(formData, "missionLinkLabel"),
+    missionLinkHref: str(formData, "missionLinkHref"),
     narratives,
     highlight: {
       title: str(formData, "highlight_title"),
       body: str(formData, "highlight_body"),
+      subline: str(formData, "highlight_subline"),
+      videoSrc: str(formData, "highlight_videoSrc"),
+      posterSrc: str(formData, "highlight_posterSrc"),
     },
     achievement: {
+      eyebrow: str(formData, "achievement_eyebrow"),
       title: str(formData, "achievement_title"),
       body: str(formData, "achievement_body"),
       ctaLabel: str(formData, "achievement_ctaLabel"),
       ctaHref: str(formData, "achievement_ctaHref"),
+      visualImageSrc: str(formData, "achievement_visualImageSrc"),
+      visualVideoSrc: str(formData, "achievement_visualVideoSrc"),
     },
     tracking: {
       title: str(formData, "tracking_title"),
       body: str(formData, "tracking_body"),
-      stats: [0, 1, 2].map((i) => ({
-        value: str(formData, `stat_${i}_value`),
-        label: str(formData, `stat_${i}_label`),
-      })),
+      pillars: [0, 1, 2].map((i) => {
+        const icon = str(formData, `pillar_${i}_icon`);
+        return {
+          icon: icon === "book" || icon === "chart" ? icon : "globe",
+          title: str(formData, `pillar_${i}_title`),
+          description: str(formData, `pillar_${i}_description`),
+          linkLabel: str(formData, `pillar_${i}_linkLabel`),
+          linkHref: str(formData, `pillar_${i}_linkHref`),
+          enabled: bool(formData, `pillar_${i}_enabled`),
+        };
+      }),
     },
     roadTo2045: {
       title: str(formData, "road_title"),
@@ -109,6 +137,12 @@ export function buildCollaborationLanding(formData: FormData) {
       imageSrc: str(formData, "road_imageSrc"),
       ctaLabel: str(formData, "road_ctaLabel"),
       ctaHref: str(formData, "road_ctaHref"),
+    },
+    progressInAction: {
+      title: str(formData, "progressInAction_title"),
+      readMoreLabel: str(formData, "progressInAction_readMoreLabel"),
+      readMoreHref: str(formData, "progressInAction_readMoreHref"),
+      emptyMessage: str(formData, "progressInAction_emptyMessage"),
     },
   };
 }
