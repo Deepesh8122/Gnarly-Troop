@@ -58,12 +58,12 @@ INSERT INTO vision_items (slug, title, subtitle, short_description, theme_color,
   ('cooperation', 'Cooperation', 'Global partnerships', 'Cooperation and diplomacy', '#512da8', '/4cvision/cooperation', 4, 'published')
 ON CONFLICT (slug) DO NOTHING;
 
-INSERT INTO team_categories (slug, name, display_style, sort_order) VALUES
-  ('executive', 'Executive Policy & Leadership Council', 'carousel', 1),
-  ('board', 'Strategic Support, Resources & Partnerships Council', 'carousel', 2),
-  ('advisory', 'Gnarly Governance & Strategic Operations Council (Gnarly Team)', 'grid', 3),
-  ('leaders', 'Troop Command & Mission Implementation Units (Troop Team)', 'grid', 4),
-  ('historical', 'Member States, Chapters & Accredited Partners', 'grid', 5)
+INSERT INTO team_categories (slug, name, display_style, sort_order, description) VALUES
+  ('executive', 'Executive Policy & Leadership Council', 'carousel', 1, NULL),
+  ('board', 'Strategic Support, Resources & Partnerships Council', 'carousel', 2, NULL),
+  ('advisory', 'Gnarly Governance & Strategic Operations Council (Gnarly Team)', 'grid', 3, NULL),
+  ('leaders', 'Troop Command & Mission Implementation Units (Troop Team)', 'grid', 4, NULL),
+  ('historical', 'Member States, Chapters & Accredited Partners', 'grid', 5, 'standalone')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO collaboration_categories (slug, name, sort_order) VALUES
@@ -116,6 +116,14 @@ JOIN (VALUES
 WHERE NOT EXISTS (
   SELECT 1 FROM page_sections ps WHERE ps.page_id = p.id
 );
+
+-- Leadership page intro (right-side description box)
+INSERT INTO page_sections (page_id, section_type, title, sort_order, is_enabled, content)
+SELECT p.id, 'custom_html', 'Page intro', 10, true,
+  '{"body_html":"<p>Gnarly Troop Global Federation is guided by leaders committed to youth empowerment, cultural diplomacy, and measurable community impact across India and partner nations.</p><p>Our councils and teams deliver the 4C vision—Climate, Community, Culture, and Cooperation—under the Troop Spirit: My Country, My Responsibility, My Pride.</p>"}'::jsonb
+FROM pages p
+WHERE p.slug = 'leadership'
+  AND NOT EXISTS (SELECT 1 FROM page_sections ps WHERE ps.page_id = p.id);
 
 INSERT INTO navigation_menu_items (menu_id, label, url, page_id, sort_order, is_enabled)
 SELECT m.id, v.label, v.url, p.id, v.sort_order, true

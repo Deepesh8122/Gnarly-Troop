@@ -48,8 +48,8 @@ export default async function AdminTeamCategoryEditPage({ params }: Params) {
               name="display_style"
               defaultValue={category.display_style ?? "grid"}
               options={[
-                { value: "carousel", label: "Carousel" },
-                { value: "grid", label: "Grid" },
+                { value: "carousel", label: "Carousel (top section)" },
+                { value: "grid", label: "Grid (list or standalone)" },
               ]}
             />
             <AdminInput
@@ -59,6 +59,12 @@ export default async function AdminTeamCategoryEditPage({ params }: Params) {
               defaultValue={String(category.sort_order ?? 0)}
             />
           </div>
+          <AdminInput
+            label="Page placement note"
+            name="description"
+            defaultValue={category.description ?? ""}
+            placeholder='Use "standalone" for a separate bottom section'
+          />
           <AdminCheckbox name="is_enabled" label="Show on website" defaultChecked={category.is_enabled} />
           <AdminSubmit />
         </AdminForm>

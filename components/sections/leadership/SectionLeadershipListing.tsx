@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { LeadershipItem } from "@/src/lib/leadership";
 import styles from "./SectionLeadershipListing.module.css";
 
@@ -19,6 +28,13 @@ type Props = {
 };
 
 const FEATURED_SLUGS = new Set(["executive", "board"]);
+const CAROUSEL_MIN_MEMBERS = 4;
+const AUTOPLAY_MS = 5000;
+
+type CarouselHandle = {
+  prev: () => void;
+  next: () => void;
+};
 
 function SectionHeading({ children }: { children: string }) {
   return <h2 className={styles.sectionHeading}>{children}</h2>;
@@ -26,8 +42,8 @@ function SectionHeading({ children }: { children: string }) {
 
 function ProfileCard({ person }: { person: LeadershipItem }) {
   const shortText =
-    person.short && person.short.length > 200
-      ? `${person.short.slice(0, 200)}…`
+    person.short && person.short.length > 180
+      ? `${person.short.slice(0, 180)}…`
       : person.short;
 
   return (
@@ -45,61 +61,153 @@ function ProfileCard({ person }: { person: LeadershipItem }) {
       <h3 className={styles.cardName}>{person.name}</h3>
       <p className={styles.cardTitle}>{person.title}</p>
       {shortText && <p className={styles.cardShort}>{shortText}</p>}
-      <span className={styles.bioLink}>Bio</span>
+      <span className={styles.bioLink}>View profile</span>
     </Link>
   );
 }
 
-function CarouselSection({ category }: { category: LeadershipCategoryGroup }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+function CarouselNav({
+  categoryName,
+  onPrev,
+  onNext,
+}: {
+  categoryName: string;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div className={styles.carouselNav}>
+      <button
+        type="button"
+        className={styles.carouselBtn}
+        onClick={onPrev}
+        aria-label={`Previous ${categoryName} members`}
+      >
+        <ChevronLeft size={20} strokeWidth={1.5} />
+      </button>
+      <button
+        type="button"
+        className={styles.carouselBtn}
+        onClick={onNext}
+        aria-label={`Next ${categoryName} members`}
+      >
+        <ChevronRight size={20} strokeWidth={1.5} />
+      </button>
+    </div>
+  );
+}
 
-  const scroll = (direction: "prev" | "next") => {
+const LeadershipCarousel = forwardRef<
+  CarouselHandle,
+  { members: LeadershipItem[]; autoplay: boolean }
+>(function LeadershipCarousel({ members, autoplay }, ref) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const pausedRef = useRef(false);
+
+  const getScrollAmount = useCallback(() => {
     const track = trackRef.current;
-    if (!track) return;
-    const amount = track.clientWidth * 0.85;
-    track.scrollBy({ left: direction === "next" ? amount : -amount, behavior: "smooth" });
-  };
+    if (!track) return 360;
+    const slide = track.querySelector<HTMLElement>(`[data-slide]`);
+    if (!slide) return 360;
+    const gap = 32;
+    return slide.offsetWidth + gap;
+  }, []);
+
+  const scroll = useCallback(
+    (direction: "prev" | "next") => {
+      const track = trackRef.current;
+      if (!track) return;
+      const amount = getScrollAmount();
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      const atEnd = track.scrollLeft >= maxScroll - 4;
+      const atStart = track.scrollLeft <= 4;
+
+      if (direction === "next" && atEnd) {
+        track.scrollTo({ left: 0, behavior: "smooth" });
+        return;
+      }
+      if (direction === "prev" && atStart) {
+        track.scrollTo({ left: maxScroll, behavior: "smooth" });
+        return;
+      }
+
+      track.scrollBy({
+        left: direction === "next" ? amount : -amount,
+        behavior: "smooth",
+      });
+    },
+    [getScrollAmount],
+  );
+
+  useImperativeHandle(ref, () => ({
+    prev: () => scroll("prev"),
+    next: () => scroll("next"),
+  }));
+
+  useEffect(() => {
+    if (!autoplay) return;
+    const id = window.setInterval(() => {
+      if (!pausedRef.current) scroll("next");
+    }, AUTOPLAY_MS);
+    return () => window.clearInterval(id);
+  }, [autoplay, scroll, members.length]);
+
+  return (
+    <div
+      className={styles.carouselOuter}
+      onMouseEnter={() => {
+        pausedRef.current = true;
+      }}
+      onMouseLeave={() => {
+        pausedRef.current = false;
+      }}
+    >
+      <div ref={trackRef} className={styles.carouselTrack}>
+        {members.map((p) => (
+          <div key={p.slug} className={styles.carouselSlide} data-slide>
+            <ProfileCard person={p} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+function FeaturedSection({ category }: { category: LeadershipCategoryGroup }) {
+  const carouselRef = useRef<CarouselHandle>(null);
 
   if (!category.members.length) return null;
+
+  const showCarousel = category.members.length >= CAROUSEL_MIN_MEMBERS;
 
   return (
     <section className={styles.featuredSection}>
       <div className={styles.featuredHead}>
         <SectionHeading>{category.name}</SectionHeading>
-        {category.members.length > 3 && (
-          <div className={styles.carouselNav}>
-            <button
-              type="button"
-              className={styles.carouselBtn}
-              onClick={() => scroll("prev")}
-              aria-label={`Previous ${category.name} members`}
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              className={styles.carouselBtn}
-              onClick={() => scroll("next")}
-              aria-label={`Next ${category.name} members`}
-            >
-              →
-            </button>
-          </div>
+        {showCarousel && (
+          <CarouselNav
+            categoryName={category.name}
+            onPrev={() => carouselRef.current?.prev()}
+            onNext={() => carouselRef.current?.next()}
+          />
         )}
       </div>
-      <div ref={trackRef} className={styles.carouselTrack}>
-        {category.members.map((p) => (
-          <div key={p.slug} className={styles.carouselItem}>
-            <ProfileCard person={p} />
-          </div>
-        ))}
-      </div>
+      {showCarousel ? (
+        <LeadershipCarousel ref={carouselRef} members={category.members} autoplay />
+      ) : (
+        <div className={styles.staticRow}>
+          {category.members.map((p) => (
+            <ProfileCard key={p.slug} person={p} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
 export default function SectionLeadershipListing({ categories, divisions, regions }: Props) {
-  const [query, setQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [roleFilter, setRoleFilter] = useState("All Roles");
   const [regionFilter, setRegionFilter] = useState("All Regions");
@@ -107,16 +215,17 @@ export default function SectionLeadershipListing({ categories, divisions, region
   const { featured, listCategories } = useMemo(() => {
     const featuredCats = categories.filter((c) => FEATURED_SLUGS.has(c.slug));
     const rest = categories.filter((c) => !FEATURED_SLUGS.has(c.slug));
-
-    return {
-      featured: featuredCats,
-      listCategories: rest,
-    };
+    return { featured: featuredCats, listCategories: rest };
   }, [categories]);
+
+  const memberList = useMemo(
+    () => listCategories.flatMap((c) => c.members),
+    [listCategories],
+  );
 
   const filterMember = useCallback(
     (p: LeadershipItem) => {
-      const q = query.trim().toLowerCase();
+      const q = appliedSearch.trim().toLowerCase();
       const matchesQuery =
         !q ||
         p.name.toLowerCase().includes(q) ||
@@ -129,38 +238,18 @@ export default function SectionLeadershipListing({ categories, divisions, region
       const matchesRegion = regionFilter === "All Regions" || p.region === regionFilter;
       return matchesQuery && matchesCategory && matchesRole && matchesRegion;
     },
-    [query, categoryFilter, roleFilter, regionFilter],
+    [appliedSearch, categoryFilter, roleFilter, regionFilter],
   );
 
-  const memberList = useMemo(
-    () => listCategories.flatMap((c) => c.members),
-    [listCategories],
+  const filteredMembers = useMemo(
+    () => memberList.filter(filterMember),
+    [memberList, filterMember],
   );
 
-  const filteredByCategory = useMemo(() => {
-    const hasActiveFilters =
-      query.trim().length > 0 ||
-      roleFilter !== "All Roles" ||
-      regionFilter !== "All Regions";
-
-    if (categoryFilter !== "All Categories") {
-      const cat = listCategories.find((c) => c.slug === categoryFilter);
-      if (!cat) return [];
-      const members = cat.members.filter(filterMember);
-      return members.length ? [{ ...cat, members }] : [];
-    }
-
-    const blocks = listCategories.map((c) => ({
-      ...c,
-      members: c.members.filter(filterMember),
-    }));
-
-    if (!hasActiveFilters) {
-      return blocks;
-    }
-
-    return blocks.filter((c) => c.members.length > 0);
-  }, [listCategories, filterMember, categoryFilter, query, roleFilter, regionFilter]);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAppliedSearch(searchInput.trim());
+  };
 
   return (
     <div className={styles.page}>
@@ -181,83 +270,103 @@ export default function SectionLeadershipListing({ categories, divisions, region
       </header>
 
       {featured.map((category) => (
-        <CarouselSection key={category.slug} category={category} />
+        <FeaturedSection key={category.slug} category={category} />
       ))}
 
       <section id="meet-leaders" className={styles.meetSection}>
         <SectionHeading>Meet our leaders</SectionHeading>
-        <form className={styles.searchRow} onSubmit={(e) => e.preventDefault()}>
+
+        <form className={styles.searchBlock} onSubmit={handleSearch}>
           <input
             type="search"
-            placeholder="Search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            className={styles.searchInput}
+            placeholder="Search by name, title, or keywords"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             aria-label="Search leaders"
           />
-          <button type="submit">Search</button>
+          <div className={styles.searchActions}>
+            <button type="submit" className={styles.searchBtn}>
+              Search
+            </button>
+          </div>
         </form>
+
         <div className={styles.filters}>
           {listCategories.length > 0 && (
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              aria-label="Filter by category"
-            >
-              <option value="All Categories">All Categories</option>
-              {listCategories.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="leadership-category-filter">
+                Categories
+              </label>
+              <select
+                id="leadership-category-filter"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                aria-label="Filter by category"
+              >
+                <option value="All Categories">All Categories</option>
+                {listCategories.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
           {divisions.length > 0 && (
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              aria-label="Filter by role"
-            >
-              <option>All Roles</option>
-              {divisions.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="leadership-role-filter">
+                Divisions
+              </label>
+              <select
+                id="leadership-role-filter"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                aria-label="Filter by division"
+              >
+                <option>All Roles</option>
+                {divisions.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
           {regions.length > 0 && (
-            <select
-              value={regionFilter}
-              onChange={(e) => setRegionFilter(e.target.value)}
-              aria-label="Filter by region"
-            >
-              <option>All Regions</option>
-              {regions.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="leadership-region-filter">
+                Regions
+              </label>
+              <select
+                id="leadership-region-filter"
+                value={regionFilter}
+                onChange={(e) => setRegionFilter(e.target.value)}
+                aria-label="Filter by region"
+              >
+                <option>All Regions</option>
+                {regions.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 
-        {filteredByCategory.length > 0 ? (
-          filteredByCategory.map((category) => (
-            <div key={category.slug} className={styles.categoryBlock}>
-              {categoryFilter === "All Categories" && (
-                <h3 className={styles.categoryLabel}>{category.name}</h3>
-              )}
-              {category.members.length > 0 ? (
-                <div className={styles.grid}>
-                  {category.members.map((p) => (
-                    <ProfileCard key={p.slug} person={p} />
-                  ))}
-                </div>
-              ) : (
-                <p className={styles.emptyCategory}>No members published in this category yet.</p>
-              )}
-            </div>
-          ))
+        {memberList.length > 0 && (
+          <p className={styles.resultCount}>
+            {filteredMembers.length} of {memberList.length}
+          </p>
+        )}
+
+        {filteredMembers.length > 0 ? (
+          <div className={styles.grid}>
+            {filteredMembers.map((p) => (
+              <ProfileCard key={p.slug} person={p} />
+            ))}
+          </div>
         ) : (
           <p className={styles.empty}>
             {memberList.length === 0
