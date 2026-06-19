@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/sections/Header";
 import Footer from "@/components/sections/SectionFooter";
+import MoreAboutFoundation from "@/components/sections/shared/MoreAboutFoundation";
 import LeadershipProfile from "@/components/sections/leadership/LeadershipProfile";
 import {
   getLeadershipItem,
@@ -8,6 +9,7 @@ import {
 } from "@/src/lib/leadership";
 
 export const revalidate = 60;
+export const dynamicParams = true;
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -33,7 +35,10 @@ export default async function LeadershipDetailPage({ params }: Params) {
   return (
     <>
       <Header />
-      <LeadershipProfile person={person} />
+      <div className="bg-white">
+        <LeadershipProfile person={person} />
+      </div>
+      <MoreAboutFoundation />
       <Footer />
     </>
   );

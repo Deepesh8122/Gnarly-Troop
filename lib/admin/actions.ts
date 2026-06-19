@@ -17,6 +17,7 @@ import {
 import { slugify } from "@/lib/utils/slug";
 import { isAllowedTeamCategorySlug } from "@/lib/team-categories";
 import { normalizePublishStatus, resolvePublishFields } from "@/lib/cms/publish-state";
+import { sanitizeLeadershipHtml } from "@/lib/cms/sanitizeHtml";
 
 function adminClient() {
   const env = getSupabaseEnv();
@@ -325,7 +326,8 @@ export async function saveTeamMemberAction(
   try {
     const supabase = adminClient();
     let bioParagraphs: string[] = [];
-    const bioHtml = String(formData.get("bio_html") ?? "") || null;
+    const rawBioHtml = String(formData.get("bio_html") ?? "") || null;
+    const bioHtml = rawBioHtml ? sanitizeLeadershipHtml(rawBioHtml) : null;
     const rawBioParagraphs = String(formData.get("bio_paragraphs") ?? "").trim();
     if (rawBioParagraphs) {
       try {
@@ -440,12 +442,14 @@ export async function saveTeamCategoryAction(
 ): Promise<ActionResult> {
   try {
     const supabase = adminClient();
+    const descriptionRaw = String(formData.get("description") ?? "").trim();
     const payload = {
       slug:
         String(formData.get("slug") ?? "") || slugify(String(formData.get("name") ?? "")),
       name: String(formData.get("name") ?? ""),
       display_style: String(formData.get("display_style") ?? "grid"),
       sort_order: Number(formData.get("sort_order") ?? 0),
+      description: descriptionRaw || null,
       is_enabled: formData.get("is_enabled") === "on",
       updated_at: new Date().toISOString(),
     };

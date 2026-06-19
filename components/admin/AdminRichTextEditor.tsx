@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { AdminField } from "@/components/admin/AdminForm";
+import { TINYMCE_CONTENT_STYLE } from "@/components/leadership/richTextStyles";
 
 const TINYMCE_BASE = "https://cdn.jsdelivr.net/npm/tinymce@7";
 
@@ -95,8 +96,12 @@ export default function AdminRichTextEditor({
           promotion: false,
           branding: false,
           license_key: "gpl",
-          content_style:
-            "body { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #0f172a; }",
+          content_style: TINYMCE_CONTENT_STYLE,
+          paste_remove_styles_if_webkit: false,
+          paste_webkit_styles: "all",
+          paste_merge_formats: true,
+          valid_elements: "*[*]",
+          extended_valid_elements: "*[*]",
           setup: (editor: TinyEditor) => {
             editorRef.current = editor;
             editor.on("change input undo redo", () => {

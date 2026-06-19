@@ -1,12 +1,12 @@
 import type { PageSection, PageWithSections, SeoMeta } from "@gnarly/types";
 import { getSupabaseEnv } from "../env";
-import { createServerSupabaseClient } from "../supabase/server";
+import { createPublicSupabaseClient } from "../supabase/server";
 
 export async function getPageBySlug(slug: string): Promise<PageWithSections | null> {
   if (!getSupabaseEnv().configured) return null;
 
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = createPublicSupabaseClient();
 
     const { data: page, error } = await supabase
       .from("pages")

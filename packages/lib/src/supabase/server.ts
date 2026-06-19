@@ -1,6 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { assertSupabaseEnv, getSupabaseEnv } from "../env";
+
+export function createPublicSupabaseClient() {
+  const { url, anonKey } = assertSupabaseEnv();
+  return createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 export async function createServerSupabaseClient() {
   const { url, anonKey } = assertSupabaseEnv();
