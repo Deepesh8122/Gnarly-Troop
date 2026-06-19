@@ -24,7 +24,7 @@ export default async function CollaborationPage() {
   return (
     <>
       <Header />
-      <SectionCollaborationLanding initiatives={initiatives} landing={landing ?? null} />
+      <SectionCollaborationLanding initiatives={initiatives} landing={landing} />
       <MoreAboutFoundation />
       <Footer />
     </>

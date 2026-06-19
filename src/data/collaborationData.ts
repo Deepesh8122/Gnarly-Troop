@@ -3,81 +3,162 @@ export type CollaborationNarrative = {
   paragraphs: string[];
   imageSrc: string;
   imageOnRight: boolean;
+  ctaLabel?: string;
+  ctaHref?: string;
+  enabled?: boolean;
 };
 
 export type CollaborationStat = {
   value: string;
   label: string;
+  linkLabel?: string;
+  linkHref?: string;
+};
+
+export type CollaborationTrackingPillar = {
+  icon: "globe" | "book" | "chart";
+  title: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+  enabled?: boolean;
+};
+
+export type CollaborationLandingSections = {
+  hero: boolean;
+  mission: boolean;
+  narratives: boolean;
+  highlight: boolean;
+  achievement: boolean;
+  tracking: boolean;
+  roadTo2045: boolean;
+  progressInAction: boolean;
 };
 
 export const collaborationLanding = {
+  sections: {
+    hero: true,
+    mission: true,
+    narratives: true,
+    highlight: true,
+    achievement: true,
+    tracking: true,
+    roadTo2045: true,
+    progressInAction: true,
+  },
   heroVideo: "/hero.mp4",
   heroPoster: "/images/visions/cooperation/feature-article.jpg",
-  heroLabel: "Collaboration",
+  heroLabel: "Progress",
   heroTitle: "PROGRESS IS POSSIBLE",
   heroBody:
-    "Gnarly Troop Global Federation unites youth, institutions, and partners worldwide to build a future where every child can live, learn, and thrive—regardless of where they are born.",
-  heroCtaLabel: "Explore our collaborations",
-  heroCtaHref: "#progress-in-action",
+    "In the face of tremendous global challenges—from climate change to education access to community resilience—we believe that where you live should never determine your health, opportunity, and well-being.",
+  heroCtaLabel: "Watch the video",
+  heroCtaHref: "#progress-hero-video",
   missionQuote:
     "By 2045, we believe where a child is born will no longer determine whether they live, learn, and thrive.",
-  missionAttr: "Gnarly Troop Global Federation",
+  missionAttr: "",
+  missionLinkLabel: "Learn more about our three goals",
+  missionLinkHref: "#progress-narratives",
   narratives: [
     {
-      heading: "BUILDING INCLUSIVE COMMUNITIES",
+      heading: "Building inclusive communities",
       paragraphs: [
         "Through village adoption, Troop chapters, and humanitarian grids, we connect local action with global responsibility.",
         "Partners share resources, knowledge, and mentorship so rural and urban youth grow as leaders together.",
       ],
       imageSrc: "/images/visions/community/feature-article.jpg",
       imageOnRight: false,
+      ctaLabel: "Learn more",
+      ctaHref: "#progress-in-action",
+      enabled: true,
     },
     {
-      heading: "CULTURE AS A BRIDGE",
+      heading: "Culture as a bridge",
       paragraphs: [
         "Cultural exchange is not performance—it is diplomacy. Summits, fellowships, and heritage programs reconnect youth to Bharat while welcoming the world.",
         "When culture leads, borders become meeting points for understanding and shared progress.",
       ],
       imageSrc: "/images/visions/culture/feature-article.jpg",
-      imageOnRight: true,
+      imageOnRight: false,
+      ctaLabel: "Learn more",
+      ctaHref: "#progress-in-action",
+      enabled: true,
     },
     {
-      heading: "COOPERATION THAT MEASURES IMPACT",
+      heading: "Cooperation that measures impact",
       paragraphs: [
         "Every collaboration sets clear outcomes: who benefits, how success is tracked, and what scales next.",
         "From climate action to education access, we document results and publish learnings for partners everywhere.",
       ],
       imageSrc: "/images/visions/climate/feature-article.jpg",
       imageOnRight: false,
+      ctaLabel: "Learn more",
+      ctaHref: "#progress-in-action",
+      enabled: true,
     },
   ] as CollaborationNarrative[],
   highlight: {
     title: "WE'RE ON THE CLOCK",
-    body: "The challenges are urgent—but so is our commitment. Every partnership, summit, and field program moves us closer to Viksit Bharat and a world that rises together.",
+    body: "On December 31, 2045, the Gates Foundation closes its doors. That's not a constraint. It's a commitment. Between now and then, we have one job: help partners tackle the problems we were built to solve—for good—and make sure the solutions outlast us.",
+    subline: "Under twenty years. Three goals. Not a moment to waste.",
+    videoSrc: "/hero.mp4",
+    posterSrc: "",
   },
   achievement: {
+    eyebrow: "25 years of progress",
     title: "WHAT WE'VE ACHIEVED SO FAR",
-    body: "Troop chapters, global summits, afforestation drives, and cross-border fellowships are delivering measurable outcomes in education, climate, and community service.",
-    ctaLabel: "Read our impact stories",
+    body: "Over the last 25 years, we've helped drive significant gains in global health and development. Childhood deaths have been cut in half—now fewer than 5 million per year—and maternal mortality has declined by about 40% worldwide.",
+    ctaLabel: "See the data",
     ctaHref: "/4cvision/cooperation",
+    visualImageSrc: "",
+    visualVideoSrc: "",
   },
   tracking: {
-    title: "TRACKING PROGRESS OVER TIME",
-    body: "We measure what matters—learning outcomes, trees planted, youth placed in leadership roles, and communities reached through collaboration.",
-    stats: [
-      { value: "28", label: "States with active Troop programs" },
-      { value: "120+", label: "Partner institutions worldwide" },
-      { value: "50K+", label: "Youth engaged in annual summits & service" },
-    ] as CollaborationStat[],
+    title: "Tracking progress over time",
+    body: "We track progress through global data, program outcomes, and ongoing reporting to understand where we're making impact and where more work is needed.",
+    pillars: [
+      {
+        icon: "globe" as const,
+        title: "Global progress",
+        description: "Tracking long-term trends in health, poverty, and opportunity",
+        linkLabel: "Read the Goalkeepers report",
+        linkHref: "/4cvision/cooperation",
+        enabled: true,
+      },
+      {
+        icon: "book" as const,
+        title: "Annual reports",
+        description: "Sharing progress and insights through annual letters and reports",
+        linkLabel: "Read our latest annual report",
+        linkHref: "/#sectionVisions",
+        enabled: true,
+      },
+      {
+        icon: "chart" as const,
+        title: "Program outcomes",
+        description: "Measuring results across our investments and partnerships",
+        linkLabel: "Explore program strategies",
+        linkHref: "/leadership/",
+        enabled: true,
+      },
+    ],
   },
   roadTo2045: {
     title: "THE ROAD TO 2045",
-    body: "Our long-term vision aligns national development with global cooperation—so progress is shared, sustainable, and led by the next generation.",
+    body: "Read the foundation's latest annual letter where our CEO lays out a roadmap for progress",
     imageSrc: "/images/visions/cooperation/feature-article.jpg",
-    ctaLabel: "Learn about our vision",
+    ctaLabel: "Read the annual letter",
     ctaHref: "/#sectionVisions",
   },
+  progressInAction: {
+    title: "Progress in action",
+    readMoreLabel: "Read more stories",
+    readMoreHref: "#progress-in-action",
+    emptyMessage: "No stories published yet.",
+  },
 };
+
+export type CollaborationLandingContent = typeof collaborationLanding;
 
 export type CollaborationInitiative = {
   slug: string;
@@ -85,6 +166,8 @@ export type CollaborationInitiative = {
   imageSrc: string;
   alt: string;
   excerpt: string;
+  categorySlug?: string | null;
+  categoryName?: string | null;
 };
 
 export type CollaborationWorkPillar = {
@@ -124,6 +207,8 @@ export const collaborationInitiatives: CollaborationInitiative[] = [
     alt: "Partners working together in the field",
     excerpt:
       "Building inclusive economic systems that expand access to food, quality education, and opportunity.",
+    categorySlug: "economic-opportunity",
+    categoryName: "Economic Opportunity",
   },
   {
     slug: "global-youth-partnerships",
@@ -132,6 +217,8 @@ export const collaborationInitiatives: CollaborationInitiative[] = [
     alt: "Youth leaders collaborating across borders",
     excerpt:
       "Connecting young leaders, institutions, and communities through shared missions and cultural exchange.",
+    categorySlug: "youth-partnerships",
+    categoryName: "Youth Partnerships",
   },
   {
     slug: "humanitarian-collaboration",
@@ -140,6 +227,8 @@ export const collaborationInitiatives: CollaborationInitiative[] = [
     alt: "Community outreach and humanitarian support",
     excerpt:
       "Uniting NGOs, defence forces, educators, and diaspora networks for measurable community impact.",
+    categorySlug: "humanitarian",
+    categoryName: "Humanitarian",
   },
   {
     slug: "academic-and-innovation-hubs",
@@ -148,6 +237,8 @@ export const collaborationInitiatives: CollaborationInitiative[] = [
     alt: "Academic collaboration and innovation",
     excerpt:
       "Fostering research partnerships, fellowships, and innovation aligned with Viksit Bharat.",
+    categorySlug: "academic",
+    categoryName: "Academic & Innovation",
   },
 ];
 

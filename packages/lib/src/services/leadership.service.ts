@@ -1,9 +1,9 @@
 import type { TeamMember } from "@gnarly/types";
 import { mapMediaRow } from "../media/resolve-url";
-import { createServerSupabaseClient } from "../supabase/server";
+import { createPublicSupabaseClient } from "../supabase/server";
 
 export async function getTeamCategoriesWithMembers() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   const { data: categories } = await supabase
     .from("team_categories")
@@ -32,7 +32,7 @@ export async function getTeamCategoriesWithMembers() {
 }
 
 export async function getTeamMemberBySlug(slug: string): Promise<TeamMember | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   const { data, error } = await supabase
     .from("team_members")

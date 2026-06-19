@@ -1,4 +1,4 @@
-import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createPublicSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getSupabaseEnv } from "@/lib/env";
 import type { RegistrationEvent } from "@/lib/registration/constants";
 
@@ -10,7 +10,7 @@ export {
 
 export async function getOpenRegistrationEvent(): Promise<RegistrationEvent | null> {
   if (!getSupabaseEnv().configured) return null;
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
   const { data: featured } = await supabase
     .from("events")

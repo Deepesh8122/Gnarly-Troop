@@ -1,6 +1,8 @@
+import { cache } from "react";
 import type { LeadershipItem } from "@/src/lib/leadership";
-import { getSupabaseEnv } from "@/lib/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createPublicSupabaseClient } from "@/lib/supabase/server";
+import { isPublicCmsConfigured } from "@/lib/cms/public-read";
+import { sanitizeLeadershipHtml } from "@/lib/cms/sanitizeHtml";
 import { isAllowedTeamCategorySlug, TEAM_CATEGORY_SLUGS } from "@/lib/team-categories";
 import { getPublicMediaUrl } from "@gnarly/lib";
 
@@ -9,20 +11,22 @@ export type LeadershipCategoryGroup = {
   name: string;
   displayStyle: "carousel" | "grid";
   sortOrder: number;
+  description?: string | null;
   members: LeadershipItem[];
 };
 
 type MemberRow = {
-  id: string;
+  id?: string;
   slug: string;
   full_name: string;
   designation: string;
   division: string | null;
   region: string | null;
-  bio_html: string | null;
+  bio_html?: string | null;
   bio_paragraphs: string[] | unknown;
-  education: string | null;
-  linkedin_url: string | null;
+  education?: string | null;
+  linkedin_url?: string | null;
+  social_links?: Record<string, string> | null;
   legacy_image_path: string | null;
   sort_order: number;
   team_categories: { slug: string; name: string; display_style: string; sort_order: number } | null;
@@ -35,7 +39,7 @@ type MemberRow = {
     storage_path: string;
     alt_text?: string | null;
   }[] | null;
-  articles: {
+  articles?: {
     title: string;
     excerpt: string | null;
     href: string;
@@ -81,6 +85,27 @@ function imageSrc(row: MemberRow): string {
   return "/images/logos/logo-2.png";
 }
 
+function normalizeSocialLinks(
+  row: MemberRow,
+): LeadershipItem["socialLinks"] | undefined {
+  const raw = row.social_links;
+  const links: NonNullable<LeadershipItem["socialLinks"]> = {};
+
+  if (raw && typeof raw === "object") {
+    for (const [key, value] of Object.entries(raw)) {
+      if (typeof value === "string" && value.trim()) {
+        links[key as keyof NonNullable<LeadershipItem["socialLinks"]>] = value.trim();
+      }
+    }
+  }
+
+  if (row.linkedin_url?.trim()) {
+    links.linkedin = row.linkedin_url.trim();
+  }
+
+  return Object.keys(links).length ? links : undefined;
+}
+
 function mapMember(row: MemberRow): LeadershipItem {
   const paragraphs = Array.isArray(row.bio_paragraphs)
     ? (row.bio_paragraphs as string[]).filter((p) => typeof p === "string" && p.trim())
@@ -101,18 +126,21 @@ function mapMember(row: MemberRow): LeadershipItem {
     categoryName: cat?.name,
     region: row.region ?? undefined,
     short: paragraphs[0] ?? stripHtml(row.bio_html)?.slice(0, 200),
-    bio: row.bio_html ?? undefined,
+    bio: row.bio_html ? sanitizeLeadershipHtml(row.bio_html) : undefined,
     bioParagraphs: paragraphs.length ? paragraphs : undefined,
     education: row.education ?? undefined,
     linkedin: row.linkedin_url ?? undefined,
-    articles: (row.articles ?? [])
-      .filter((a) => a.is_enabled)
-      .map((a) => ({
-        title: a.title,
-        excerpt: a.excerpt ?? "",
-        href: a.href,
-        type: (a.article_type as "Article" | "Video" | "Story") ?? "Article",
-      })),
+    socialLinks: normalizeSocialLinks(row),
+    articles: row.articles?.length
+      ? row.articles
+          .filter((a) => a.is_enabled)
+          .map((a) => ({
+            title: a.title,
+            excerpt: a.excerpt ?? "",
+            href: a.href,
+            type: (a.article_type as "Article" | "Video" | "Story") ?? "Article",
+          }))
+      : undefined,
   };
 }
 
@@ -125,22 +153,27 @@ function safeMapMember(row: MemberRow): LeadershipItem | null {
   }
 }
 
-function stripHtml(html: string | null): string | undefined {
+function stripHtml(html: string | null | undefined): string | undefined {
   if (!html) return undefined;
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export async function hasCmsLeadership(): Promise<boolean> {
-  if (!getSupabaseEnv().configured) return false;
+  if (!isPublicCmsConfigured()) return false;
   try {
-    const supabase = await createServerSupabaseClient();
-    const { count } = await supabase
+    const supabase = createPublicSupabaseClient();
+    const { count, error } = await supabase
       .from("team_members")
       .select("id", { count: "exact", head: true })
       .eq("status", "published")
       .eq("is_enabled", true);
+    if (error) {
+      console.error("[hasCmsLeadership]", error.message);
+      return false;
+    }
     return (count ?? 0) > 0;
-  } catch {
+  } catch (error) {
+    console.error("[hasCmsLeadership]", error);
     return false;
   }
 }
@@ -169,37 +202,48 @@ export async function fetchCmsLeadership(): Promise<{
 }
 
 /** Dynamic categories from team_categories table */
-export async function fetchCmsLeadershipByCategories(): Promise<{
+export const fetchCmsLeadershipByCategories = cache(async (): Promise<{
   categories: LeadershipCategoryGroup[];
   divisions: string[];
   regions: string[];
   slugs: string[];
-} | null> {
-  if (!(await hasCmsLeadership())) return null;
+} | null> => {
+  if (!isPublicCmsConfigured()) return null;
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
 
-  const { data: categoryRows } = await supabase
-    .from("team_categories")
-    .select("slug, name, display_style, sort_order")
-    .eq("is_enabled", true)
-    .in("slug", TEAM_CATEGORY_SLUGS)
-    .order("sort_order");
+  const [{ data: categoryRows, error: categoryError }, { data: memberRows, error: memberError }] =
+    await Promise.all([
+      supabase
+        .from("team_categories")
+        .select("slug, name, display_style, sort_order, description")
+        .eq("is_enabled", true)
+        .in("slug", TEAM_CATEGORY_SLUGS)
+        .order("sort_order"),
+      supabase
+        .from("team_members")
+        .select(
+          `slug, full_name, designation, division, region, bio_paragraphs, legacy_image_path, sort_order,
+           team_categories(slug, name, display_style, sort_order),
+           image:media_library!team_members_image_media_id_fkey(bucket, storage_path, alt_text)`,
+        )
+        .eq("status", "published")
+        .eq("is_enabled", true)
+        .order("sort_order"),
+    ]);
 
-  const { data: memberRows } = await supabase
-    .from("team_members")
-    .select(
-      `*, team_categories(slug, name, display_style, sort_order),
-       image:media_library!team_members_image_media_id_fkey(bucket, storage_path, alt_text),
-       articles:team_member_articles(*)`,
-    )
-    .eq("status", "published")
-    .eq("is_enabled", true)
-    .order("sort_order");
+  if (categoryError) {
+    console.error("[fetchCmsLeadershipByCategories]", categoryError.message);
+  }
+
+  if (memberError) {
+    console.error("[fetchCmsLeadershipByCategories]", memberError.message);
+    return null;
+  }
 
   if (!memberRows?.length) return null;
 
-  const members = (memberRows as MemberRow[])
+  const members = (memberRows as unknown as MemberRow[])
     .map(safeMapMember)
     .filter((m): m is LeadershipItem => m !== null)
     .filter((m) => isAllowedTeamCategorySlug(m.section));
@@ -222,6 +266,7 @@ export async function fetchCmsLeadershipByCategories(): Promise<{
     name: c.name,
     displayStyle: (c.display_style === "carousel" ? "carousel" : "grid") as "carousel" | "grid",
     sortOrder: c.sort_order,
+    description: c.description ?? null,
     members: membersByCategory.get(c.slug) ?? [],
   }));
 
@@ -233,6 +278,7 @@ export async function fetchCmsLeadershipByCategories(): Promise<{
         name: list[0]?.categoryName ?? slug,
         displayStyle: "grid",
         sortOrder: 999,
+        description: null,
         members: list,
       });
     }
@@ -246,15 +292,15 @@ export async function fetchCmsLeadershipByCategories(): Promise<{
     regions: Array.from(regions).sort(),
     slugs: members.map((m) => m.slug),
   };
-}
+});
 
-export async function fetchCmsLeadershipMember(
+export const fetchCmsLeadershipMember = cache(async (
   slug: string,
-): Promise<LeadershipItem | null> {
-  if (!(await hasCmsLeadership())) return null;
+): Promise<LeadershipItem | null> => {
+  if (!isPublicCmsConfigured()) return null;
 
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = createPublicSupabaseClient();
     const { data, error } = await supabase
       .from("team_members")
       .select(
@@ -278,4 +324,4 @@ export async function fetchCmsLeadershipMember(
     console.error("[fetchCmsLeadershipMember]", slug, error);
     return null;
   }
-}
+});

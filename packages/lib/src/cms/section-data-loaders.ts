@@ -1,5 +1,5 @@
 import type { PageSection } from "@gnarly/types";
-import { createServerSupabaseClient } from "../supabase/server";
+import { createPublicSupabaseClient } from "../supabase/server";
 import { getPublicMediaUrl } from "../media/resolve-url";
 import {
   DEFAULT_MINISTER_CARDS,
@@ -60,7 +60,7 @@ function cardsFromRecommendationRow(
 export async function loadSectionData(
   section: PageSection,
 ): Promise<Record<string, unknown>> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createPublicSupabaseClient();
   const config = mergeSectionContent(
     section.section_type,
     (section.content as Record<string, unknown>) ?? {},

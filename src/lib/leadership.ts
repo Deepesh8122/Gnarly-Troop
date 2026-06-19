@@ -14,6 +14,15 @@ export type LeadershipArticle = {
   type?: "Article" | "Video" | "Story";
 };
 
+export type LeadershipSocialLinks = {
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+  instagram?: string;
+  youtube?: string;
+  website?: string;
+};
+
 export type LeadershipItem = {
   slug: string;
   src: string;
@@ -31,6 +40,7 @@ export type LeadershipItem = {
   bioParagraphs?: string[];
   education?: string;
   linkedin?: string;
+  socialLinks?: LeadershipSocialLinks;
   articles?: LeadershipArticle[];
 };
 

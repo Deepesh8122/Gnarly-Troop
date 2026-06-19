@@ -1,9 +1,9 @@
-import { getSupabaseEnv } from "@/lib/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isPublicCmsConfigured } from "@/lib/cms/public-read";
+import { createPublicSupabaseClient } from "@/lib/supabase/server";
 
 export async function getPublicSiteSetting(key: string): Promise<string | null> {
-  if (!getSupabaseEnv().configured) return null;
-  const supabase = await createServerSupabaseClient();
+  if (!isPublicCmsConfigured()) return null;
+  const supabase = createPublicSupabaseClient();
   const { data } = await supabase
     .from("site_settings")
     .select("value")

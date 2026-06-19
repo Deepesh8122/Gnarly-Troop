@@ -1,7 +1,10 @@
 import type {
   CollaborationDetail,
   CollaborationInitiative,
+  CollaborationLandingContent,
+  CollaborationLandingSections,
 } from "../data/collaborationData";
+import { normalizeCollaborationLanding } from "@/lib/cms/normalizeCollaborationLanding";
 import { getSupabaseEnv } from "@/lib/env";
 import {
   fetchCmsCollaborationDetail,
@@ -10,15 +13,19 @@ import {
   fetchCollaborationLanding,
 } from "@/lib/cms/collaboration";
 
-export type { CollaborationDetail, CollaborationInitiative };
+export type { CollaborationDetail, CollaborationInitiative, CollaborationLandingContent, CollaborationLandingSections };
 
 function useCms() {
   return getSupabaseEnv().configured;
 }
 
-export async function getCollaborationLandingContent() {
-  if (!useCms()) return null;
-  return fetchCollaborationLanding();
+/** CMS-first; merges saved JSON with defaults so the page always renders. */
+export async function getCollaborationLandingContent(): Promise<CollaborationLandingContent> {
+  if (useCms()) {
+    const cms = await fetchCollaborationLanding();
+    if (cms) return cms;
+  }
+  return normalizeCollaborationLanding({});
 }
 
 export async function getCollaborationInitiatives(): Promise<CollaborationInitiative[]> {

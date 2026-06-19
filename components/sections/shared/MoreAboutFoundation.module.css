@@ -1,11 +1,11 @@
 .section {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid #e5e5e5;
   background: #fff;
-  padding: 56px 0 72px;
+  padding: 48px 0 64px;
 }
 
 .inner {
-  max-width: 1100px;
+  max-width: 1170px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -53,6 +53,18 @@
 }
 
 @media (max-width: 768px) {
+  .section {
+    padding: 32px 0 48px;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
+  .heading {
+    margin-bottom: 24px;
+  }
+
   .grid {
     grid-template-columns: 1fr;
     gap: 28px;

@@ -1,11 +1,21 @@
 import type {
   CollaborationDetail,
   CollaborationInitiative,
+  CollaborationLandingContent,
 } from "@/src/data/collaborationData";
-import { collaborationLanding as staticLanding } from "@/src/data/collaborationData";
-import { getSupabaseEnv } from "@/lib/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createPublicSupabaseClient } from "@/lib/supabase/server";
+import { isPublicCmsConfigured } from "@/lib/cms/public-read";
+import { normalizeCollaborationLanding } from "@/lib/cms/normalizeCollaborationLanding";
 import { getPublicMediaUrl } from "@gnarly/lib";
+
+function normalizePartnerLogo(
+  logo: { bucket: string; storage_path: string } | { bucket: string; storage_path: string }[] | null | undefined,
+): { bucket: string; storage_path: string } | null {
+  if (!logo) return null;
+  const row = Array.isArray(logo) ? logo[0] : logo;
+  if (!row?.storage_path) return null;
+  return row;
+}
 
 function partnerImageSrc(row: {
   legacy_image_path?: string | null;
@@ -16,70 +26,93 @@ function partnerImageSrc(row: {
       ? row.legacy_image_path
       : `/${row.legacy_image_path}`;
   }
-  if (!row.logo) return "/images/logos/logo-2.png";
-  if (row.logo.bucket === "site" || row.logo.storage_path.startsWith("/")) {
-    return row.logo.storage_path.startsWith("/")
-      ? row.logo.storage_path
-      : `/${row.logo.storage_path}`;
+  const logo = row.logo;
+  if (!logo?.storage_path) return "/images/logos/logo-2.png";
+  if (logo.bucket === "site" || logo.storage_path.startsWith("/")) {
+    return logo.storage_path.startsWith("/")
+      ? logo.storage_path
+      : `/${logo.storage_path}`;
   }
-  return getPublicMediaUrl(row.logo);
+  return getPublicMediaUrl(logo);
 }
 
 export async function hasCmsCollaboration(): Promise<boolean> {
-  if (!getSupabaseEnv().configured) return false;
+  if (!isPublicCmsConfigured()) return false;
   try {
-    const supabase = await createServerSupabaseClient();
-    const { count } = await supabase
+    const supabase = createPublicSupabaseClient();
+    const { count, error } = await supabase
       .from("collaboration_partners")
       .select("id", { count: "exact", head: true })
       .eq("status", "published")
       .eq("is_enabled", true);
+    if (error) {
+      console.error("[hasCmsCollaboration]", error.message);
+      return false;
+    }
     return (count ?? 0) > 0;
-  } catch {
+  } catch (error) {
+    console.error("[hasCmsCollaboration]", error);
     return false;
   }
 }
 
-export async function fetchCollaborationLanding(): Promise<
-  typeof staticLanding | null
-> {
-  if (!getSupabaseEnv().configured) return null;
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+export async function fetchCollaborationLanding(): Promise<CollaborationLandingContent | null> {
+  if (!isPublicCmsConfigured()) return null;
+
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
     .from("site_settings")
     .select("value")
     .eq("key", "collaboration_landing")
     .maybeSingle();
 
-  if (!data?.value || typeof data.value !== "object") return null;
-  return data.value as typeof staticLanding;
+  if (error) {
+    console.error("[fetchCollaborationLanding]", error.message);
+    return normalizeCollaborationLanding({});
+  }
+
+  if (!data?.value || typeof data.value !== "object") {
+    return normalizeCollaborationLanding({});
+  }
+
+  return normalizeCollaborationLanding(data.value as Partial<CollaborationLandingContent>);
 }
 
 export async function fetchCmsCollaborationInitiatives(): Promise<
   CollaborationInitiative[] | null
 > {
-  if (!(await hasCmsCollaboration())) return null;
+  if (!isPublicCmsConfigured()) return null;
 
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
     .from("collaboration_partners")
     .select(
-      "slug, name, short_description, legacy_image_path, logo:media_library!collaboration_partners_logo_media_id_fkey(bucket, storage_path)",
+      "slug, name, short_description, legacy_image_path, logo:media_library!collaboration_partners_logo_media_id_fkey(bucket, storage_path), collaboration_categories(slug, name)",
     )
     .eq("status", "published")
     .eq("is_enabled", true)
     .order("sort_order");
 
+  if (error) {
+    console.error("[fetchCmsCollaborationInitiatives]", error.message);
+    return null;
+  }
+
   if (!data?.length) return null;
 
   return data.map((p) => {
-    const logo = Array.isArray(p.logo) ? p.logo[0] : p.logo;
+    const logo = normalizePartnerLogo(p.logo);
+    const cat = Array.isArray(p.collaboration_categories)
+      ? p.collaboration_categories[0]
+      : p.collaboration_categories;
     return {
       slug: p.slug,
       title: p.name,
       excerpt: p.short_description ?? "",
-      imageSrc: partnerImageSrc({ logo: logo ?? null }),
+      imageSrc: partnerImageSrc({ legacy_image_path: p.legacy_image_path, logo }),
       alt: p.name,
+      categorySlug: cat?.slug ?? null,
+      categoryName: cat?.name ?? null,
     };
   });
 }
@@ -87,16 +120,21 @@ export async function fetchCmsCollaborationInitiatives(): Promise<
 export async function fetchCmsCollaborationDetail(
   slug: string,
 ): Promise<CollaborationDetail | null> {
-  if (!(await hasCmsCollaboration())) return null;
+  if (!isPublicCmsConfigured()) return null;
 
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
     .from("collaboration_partners")
     .select("slug, name, short_description, detail_content")
     .eq("slug", slug)
     .eq("status", "published")
     .eq("is_enabled", true)
     .maybeSingle();
+
+  if (error) {
+    console.error("[fetchCmsCollaborationDetail]", slug, error.message);
+    return null;
+  }
 
   if (!data) return null;
 
@@ -133,12 +171,18 @@ export async function fetchCmsCollaborationDetail(
 }
 
 export async function fetchCmsCollaborationSlugs(): Promise<string[]> {
-  if (!(await hasCmsCollaboration())) return [];
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  if (!isPublicCmsConfigured()) return [];
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
     .from("collaboration_partners")
     .select("slug")
     .eq("status", "published")
     .eq("is_enabled", true);
+
+  if (error) {
+    console.error("[fetchCmsCollaborationSlugs]", error.message);
+    return [];
+  }
+
   return (data ?? []).map((r) => r.slug);
 }

@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   },
   // output: "export", // enables static export
   trailingSlash: true,
+  reactStrictMode: true,
 };
 
 export default nextConfig;
