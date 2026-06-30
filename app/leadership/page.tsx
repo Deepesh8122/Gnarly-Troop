@@ -78,7 +78,6 @@ export default async function LeadershipRoutePage() {
       ) : (
         <LeadershipPage
           categories={data.categories}
-          divisions={data.divisions}
           regions={data.regions}
           pageTitle={page?.title ?? "Leadership"}
           introParagraphs={introParagraphs}

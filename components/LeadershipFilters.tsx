@@ -2,44 +2,49 @@
 
 import styles from "@/components/leadership/leadership.module.css";
 
+type CategoryOption = {
+  slug: string;
+  name: string;
+};
+
 type Props = {
-  divisions: string[];
+  categories: CategoryOption[];
   regions: string[];
-  division: string;
+  category: string;
   region: string;
-  onDivisionChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
   onRegionChange: (value: string) => void;
 };
 
 export default function LeadershipFilters({
-  divisions,
+  categories,
   regions,
-  division,
+  category,
   region,
-  onDivisionChange,
+  onCategoryChange,
   onRegionChange,
 }: Props) {
-  if (!divisions.length && !regions.length) return null;
+  if (!categories.length && !regions.length) return null;
 
   return (
     <fieldset className={styles.filterBar}>
       <div className={styles.filterMenus}>
-        {divisions.length > 0 && (
+        {categories.length > 0 && (
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel} htmlFor="leadership-division-filter">
-              Divisions
+            <label className="sr-only" htmlFor="leadership-category-filter">
+              Filter by team category
             </label>
             <select
-              id="leadership-division-filter"
-              value={division}
-              onChange={(e) => onDivisionChange(e.target.value)}
+              id="leadership-category-filter"
+              value={category}
+              onChange={(e) => onCategoryChange(e.target.value)}
               className={styles.filterSelect}
-              aria-label="Filter by division"
+              aria-label="Filter by team category"
             >
-              <option value="">All Divisions</option>
-              {divisions.map((d) => (
-                <option key={d} value={d}>
-                  {d}
+              <option value="">All Team Members</option>
+              {categories.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -47,17 +52,17 @@ export default function LeadershipFilters({
         )}
         {regions.length > 0 && (
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel} htmlFor="leadership-program-filter">
-              Program strategies
+            <label className="sr-only" htmlFor="leadership-region-filter">
+              Filter by region
             </label>
             <select
-              id="leadership-program-filter"
+              id="leadership-region-filter"
               value={region}
               onChange={(e) => onRegionChange(e.target.value)}
               className={styles.filterSelect}
-              aria-label="Filter by program"
+              aria-label="Filter by region"
             >
-              <option value="">All program strategies</option>
+              <option value="">All Regions</option>
               {regions.map((r) => (
                 <option key={r} value={r}>
                   {r}

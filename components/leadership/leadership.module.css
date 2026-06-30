@@ -563,46 +563,22 @@
   border: 0;
 }
 
-.filterLegend {
-  display: block;
-  width: 100%;
-  margin: 0 0 16px;
-  padding: 0;
-  font-family: var(--gates-font-sans);
-  font-size: clamp(1rem, 0.9032rem + 0.3226vw, 1.125rem);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  color: var(--gates-text);
-}
-
 .filterMenus {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   width: 100%;
-  gap: 16px;
+  gap: 24px;
+  align-items: center;
 }
 
 .filterGroup {
-  flex: 1 1 0;
+  flex: 0 1 auto;
   min-width: 0;
-  width: 100%;
-}
-
-.filterLabel {
-  display: block;
-  margin-bottom: 8px;
-  font-family: var(--gates-font-sans);
-  font-size: 16px;
-  font-weight: 600;
-  font-optical-sizing: auto;
-  letter-spacing: normal;
-  line-height: 1.25;
-  color: var(--gates-text);
 }
 
 .filterSelect {
-  width: 100%;
+  min-width: 180px;
   min-height: var(--form-input-height);
   padding: 12px 36px 12px 13px;
   border: 1px solid var(--gates-border);
@@ -619,6 +595,11 @@
      -moz-appearance: none;
           appearance: none;
   cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filterSelect:hover {
+  border-color: #999;
 }
 
 .filterSelect:focus {
@@ -732,16 +713,6 @@
 /* ── Responsive ── */
 
 @media (min-width: 681px) {
-  .filterBar {
-    max-width: 50%;
-  }
-
-  .filterMenus {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 24px;
-  }
-
   .grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 56px var(--grid-gap);

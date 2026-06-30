@@ -33,7 +33,6 @@ type RawCategoryGroup = {
 
 type Props = {
   categories: RawCategoryGroup[];
-  divisions: string[];
   regions: string[];
   pageTitle?: string;
   introParagraphs?: string[];
@@ -258,33 +257,24 @@ function CategorySection({ category }: { category: LeadershipCategoryGroup }) {
   );
 }
 
-function filterLeaders(
-  leaders: Leader[],
-  query: string,
-  division: string,
-  region: string,
-): Leader[] {
+function filterBySearch(leaders: Leader[], query: string): Leader[] {
   const q = query.trim().toLowerCase();
+  if (!q) return leaders;
 
   return leaders.filter((leader) => {
-    const matchesQuery =
-      !q ||
+    return (
       leader.name.toLowerCase().includes(q) ||
       leader.designation.toLowerCase().includes(q) ||
       (leader.short?.toLowerCase().includes(q) ?? false) ||
+      (leader.categoryName?.toLowerCase().includes(q) ?? false) ||
       (leader.division?.toLowerCase().includes(q) ?? false) ||
-      (leader.region?.toLowerCase().includes(q) ?? false);
-
-    const matchesDivision = !division || leader.division === division;
-    const matchesRegion = !region || leader.region === region;
-
-    return matchesQuery && matchesDivision && matchesRegion;
+      (leader.region?.toLowerCase().includes(q) ?? false)
+    );
   });
 }
 
 export default function LeadershipPage({
   categories,
-  divisions,
   regions,
   pageTitle = "Leadership",
   introParagraphs = [],
@@ -292,7 +282,7 @@ export default function LeadershipPage({
 }: Props) {
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [divisionFilter, setDivisionFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
 
   const mappedCategories = useMemo(
@@ -304,46 +294,70 @@ export default function LeadershipPage({
     [categories],
   );
 
-  const { carouselCategories, listCategories, standaloneCategories } = useMemo(() => {
+  const { carouselCategories, standaloneCategories } = useMemo(() => {
     const carousel = mappedCategories.filter((c) => c.displayStyle === "carousel");
     const grid = mappedCategories.filter((c) => c.displayStyle === "grid");
     const standalone = grid.filter(isStandaloneCategory);
-    const list = grid.filter((c) => !isStandaloneCategory(c));
 
     return {
       carouselCategories: carousel,
-      listCategories: list,
       standaloneCategories: standalone,
     };
   }, [mappedCategories]);
 
-  const memberList = useMemo(
-    () => listCategories.flatMap((c) => c.members),
-    [listCategories],
+  const searchableCategories = useMemo(
+    () => mappedCategories.filter((c) => !isStandaloneCategory(c)),
+    [mappedCategories],
   );
 
-  const showMeetSection = listCategories.length > 0;
+  const allMembersList = useMemo(
+    () => searchableCategories.flatMap((c) => c.members),
+    [searchableCategories],
+  );
 
-  const divisionOptions = useMemo(() => {
-    if (divisions.length) return divisions;
-    const fromMembers = new Set(
-      memberList.map((m) => m.division).filter((d): d is string => Boolean(d)),
-    );
-    return Array.from(fromMembers).sort();
-  }, [divisions, memberList]);
+  const showMeetSection = allMembersList.length > 0;
+
+  const categoryOptions = useMemo(
+    () => searchableCategories.map((c) => ({ slug: c.slug, name: c.name })),
+    [searchableCategories],
+  );
+
+  const poolMembers = useMemo(() => {
+    let list = categoryFilter
+      ? allMembersList.filter((m) => m.category === categoryFilter)
+      : allMembersList;
+
+    if (regionFilter) {
+      list = list.filter((m) => m.region === regionFilter);
+    }
+
+    return list;
+  }, [allMembersList, categoryFilter, regionFilter]);
 
   const regionOptions = useMemo(() => {
-    if (regions.length) return regions;
+    const scope = categoryFilter
+      ? allMembersList.filter((m) => m.category === categoryFilter)
+      : allMembersList;
+
+    if (regions.length) {
+      return regions.filter((r) => scope.some((m) => m.region === r));
+    }
+
     const fromMembers = new Set(
-      memberList.map((m) => m.region).filter((r): r is string => Boolean(r)),
+      scope.map((m) => m.region).filter((r): r is string => Boolean(r)),
     );
     return Array.from(fromMembers).sort();
-  }, [regions, memberList]);
+  }, [regions, allMembersList, categoryFilter]);
 
   const filteredMembers = useMemo(
-    () => filterLeaders(memberList, appliedSearch, divisionFilter, regionFilter),
-    [memberList, appliedSearch, divisionFilter, regionFilter],
+    () => filterBySearch(poolMembers, appliedSearch),
+    [poolMembers, appliedSearch],
   );
+
+  const handleCategoryChange = useCallback((value: string) => {
+    setCategoryFilter(value);
+    setRegionFilter("");
+  }, []);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchInput(value);
@@ -386,17 +400,17 @@ export default function LeadershipPage({
           <LeadershipSearch value={searchInput} onChange={handleSearchChange} />
 
           <LeadershipFilters
-            divisions={divisionOptions}
+            categories={categoryOptions}
             regions={regionOptions}
-            division={divisionFilter}
+            category={categoryFilter}
             region={regionFilter}
-            onDivisionChange={setDivisionFilter}
+            onCategoryChange={handleCategoryChange}
             onRegionChange={setRegionFilter}
           />
 
-          {memberList.length > 0 && (
+          {poolMembers.length > 0 && (
             <p className={styles.resultCount}>
-              {filteredMembers.length} of {memberList.length}
+              {filteredMembers.length} of {poolMembers.length}
             </p>
           )}
 
@@ -404,9 +418,9 @@ export default function LeadershipPage({
             <LeadershipGrid leaders={filteredMembers} />
           ) : (
             <p className={styles.empty}>
-              {memberList.length === 0
+              {allMembersList.length === 0
                 ? "No team members in these categories yet."
-                : "No team members match your search."}
+                : "No team members match your filters."}
             </p>
           )}
         </section>
