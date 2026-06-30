@@ -5,7 +5,10 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.88.10'],
   serverExternalPackages: ["pdfkit", "fontkit"],
   outputFileTracingIncludes: {
-    "/*": ["./node_modules/pdfkit/js/data/**/*"],
+    "/*": [
+      "./node_modules/pdfkit/js/data/**/*",
+      "./public/receipt-templates/**/*",
+    ],
   },
   turbopack: {
     root: './',

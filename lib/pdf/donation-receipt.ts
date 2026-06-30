@@ -1,85 +1,86 @@
-import { generatePdfBuffer } from "@/lib/pdf/create-pdf-document";
+import {
+  formatInrFromPaise,
+  formatReceiptDate,
+  joinAddress,
+  shortReferenceId,
+} from "@/lib/pdf/receipt-templates";
+import { generateIdentityReceiptPdf } from "@/lib/pdf/identity-overlay";
 
 export type DonationReceiptData = {
   donorName: string;
   email: string;
+  phone?: string | null;
   amountPaise: number;
   merchantTransactionId: string;
   organization?: string | null;
+  country?: string | null;
   state?: string | null;
   district?: string | null;
+  pinCode?: string | null;
+  pan?: string | null;
   createdAt?: string | null;
-  phonepeTransactionId?: string | null;
+  contributionType?: string | null;
+  purpose?: string | null;
+  siteUrl?: string;
 };
 
-function formatInr(paise: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(paise / 100);
-}
-
 export async function generateDonationReceiptPdf(data: DonationReceiptData): Promise<Buffer> {
-  const dateStr = data.createdAt
-    ? new Date(data.createdAt).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : new Date().toLocaleDateString("en-IN");
+  const address = joinAddress([
+    data.organization,
+    data.district,
+    data.state,
+    data.country,
+    data.pinCode ? `PIN ${data.pinCode}` : null,
+  ]);
 
-  return generatePdfBuffer((doc) => {
-    doc
-      .fillColor("#5f259f")
-      .fontSize(22)
-      .text("Gnarly Troop Global Federation", { align: "center" })
-      .moveDown(0.3);
-    doc.fillColor("#334155").fontSize(14).text("Donation Acknowledgement", { align: "center" });
-    doc.moveDown(1.5);
+  const verifyUrl =
+    data.siteUrl && data.merchantTransactionId
+      ? `${data.siteUrl.replace(/\/$/, "")}/collaboration/donation/status/?id=${encodeURIComponent(data.merchantTransactionId)}`
+      : undefined;
 
-    doc.fillColor("#0f172a").fontSize(16).text(`Dear ${data.donorName},`, { align: "left" });
-    doc.moveDown(0.5);
-    doc
-      .fillColor("#475569")
-      .fontSize(12)
-      .text(
-        "Thank you for your generous contribution to Gnarly Troop Global Federation. " +
-          "Your support helps us advance youth leadership, cultural exchange, and community programs across India.",
-        { align: "left", lineGap: 4 },
-      );
-    doc.moveDown(1.2);
-
-    doc.fillColor("#0f172a").fontSize(13).text("Donor details", { underline: true });
-    doc.moveDown(0.4);
-    doc.fillColor("#334155").fontSize(11);
-    doc.text(`Name: ${data.donorName}`);
-    doc.text(`Email: ${data.email}`);
-    if (data.organization) doc.text(`Organization: ${data.organization}`);
-    if (data.state) doc.text(`State: ${data.state}`);
-    if (data.district) doc.text(`District: ${data.district}`);
-    doc.moveDown(1);
-
-    doc.fillColor("#0f172a").fontSize(13).text("Payment details", { underline: true });
-    doc.moveDown(0.4);
-    doc.fillColor("#334155").fontSize(11);
-    doc.text(`Amount: ${formatInr(data.amountPaise)}`);
-    doc.text(`Date: ${dateStr}`);
-    doc.text(`Reference: ${data.merchantTransactionId}`);
-    if (data.phonepeTransactionId) doc.text(`PhonePe ID: ${data.phonepeTransactionId}`);
-    doc.text("Status: Payment successful");
-    doc.moveDown(1.5);
-
-    doc
-      .fillColor("#64748b")
-      .fontSize(10)
-      .text(
-        "This acknowledgement is issued for your records. For 80G tax exemption certificate, please reply to this email with your PAN details.",
-        { align: "center", lineGap: 3 },
-      );
-    doc.moveDown(1);
-    doc.text("Gnarly Troop Global Federation · president@gnarlytroop.org", {
-      align: "center",
-    });
+  return generateIdentityReceiptPdf("donation", {
+    name: data.donorName,
+    address: address || "—",
+    qrUrl: verifyUrl,
+    lines: [
+      {
+        x: 320,
+        y: 198,
+        text: shortReferenceId("DNR", data.merchantTransactionId),
+        size: 10,
+        bold: true,
+      },
+      {
+        x: 360,
+        y: 218,
+        text: data.contributionType ?? "Individual",
+        size: 10,
+      },
+      {
+        x: 360,
+        y: 238,
+        text: formatReceiptDate(data.createdAt),
+        size: 10,
+      },
+      {
+        x: 360,
+        y: 258,
+        text: data.purpose ?? "Culture / Heritage / Education / Global Exchange",
+        size: 9,
+        width: 360,
+      },
+      {
+        x: 360,
+        y: 278,
+        text: "Gnarly Troop Global Federation",
+        size: 10,
+      },
+    ],
+    bottomBoxes: [
+      { x: 118, y: 328, width: 130, value: data.pan?.trim() || "—" },
+      { x: 298, y: 328, width: 130, value: "PhonePe / UPI" },
+      { x: 478, y: 328, width: 110, value: formatInrFromPaise(data.amountPaise) },
+      { x: 628, y: 328, width: 110, value: data.phone?.trim() || "—" },
+    ],
   });
 }

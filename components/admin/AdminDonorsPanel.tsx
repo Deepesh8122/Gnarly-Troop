@@ -36,6 +36,7 @@ export type TransactionRow = {
   payment_environment: PhonePePaymentEnvironment | null;
   status: string | null;
   created_at: string | null;
+  receipt_storage_path: string | null;
 };
 
 type Props = {
@@ -65,6 +66,13 @@ const transactionColumns: AdminTableColumn[] = [
   { key: "phone", header: "Phone", format: "mono" },
   { key: "created_at", header: "Date", format: "datetime" },
   { key: "status_label", header: "Status", format: "status-pill", statusKey: "status" },
+  {
+    key: "receipt_link",
+    header: "Receipt PDF",
+    format: "link",
+    linkPattern: "/api/admin/receipts/download/?type=donation&id={id}",
+    linkLabelKey: "receipt_link",
+  },
 ];
 
 const ENV_OPTIONS: DonationEnvironmentFilter[] = ["all", "production", "sandbox"];
@@ -104,6 +112,7 @@ export default function AdminDonorsPanel({
         created_at: txn.created_at,
         status: display.status,
         status_label: display.label,
+        receipt_link: txn.receipt_storage_path ? "Download PDF" : "—",
       };
     });
   }, [allTransactions, envFilter]);
