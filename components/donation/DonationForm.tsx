@@ -13,6 +13,7 @@ type Tier = {
   title: string;
   amount_paise: number;
   description: string | null;
+  receipt_type?: "donation" | "membership" | null;
 };
 
 type Props = {
@@ -84,6 +85,7 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
 
   const selectedTier = tiers.find((t) => t.slug === selected);
   const isCustom = selected === CUSTOM_SLUG;
+  const isMembershipTier = selectedTier?.receipt_type === "membership";
 
   const displayAmount = useMemo(() => {
     if (isCustom) {
@@ -209,7 +211,8 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
       <section className={styles.detailsSection}>
         <h2 className={styles.sectionTitle}>Your details</h2>
         <p className={styles.sectionLead}>
-          Used for your acknowledgement PDF and email. Payment happens on PhonePe (QR / UPI).
+          Used for your {isMembershipTier ? "membership recognition" : "donor acknowledgment"} PDF
+          and email. Payment happens on PhonePe (QR / UPI).
         </p>
 
         {detailsMounted ? <DonorDetailsFields /> : <DonorDetailsPlaceholder />}
@@ -238,7 +241,8 @@ export default function DonationForm({ tiers, phonePeReady }: Props) {
 
       <p className={styles.secureNote}>
         You will be redirected to PhonePe to scan a QR code or pay with any UPI app. A PDF
-        acknowledgement will be emailed after successful payment.
+        {isMembershipTier ? " membership recognition document" : " donor acknowledgment"} will be
+        emailed after successful payment.
       </p>
     </form>
   );

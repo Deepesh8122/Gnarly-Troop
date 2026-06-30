@@ -129,16 +129,32 @@ export function verifyPhonePeWebhook(authHeader: string | null): boolean {
   return normalized === expected;
 }
 
+type PhonePePaymentOptions = {
+  siteUrl?: string;
+  returnPath?: string;
+  callbackPath?: string;
+  paymentMessage?: string;
+};
+
+function buildPhonePeReturnUrl(siteUrl: string, merchantTransactionId: string, returnPath?: string) {
+  const path =
+    returnPath ??
+    `/collaboration/donation/status/?id=${encodeURIComponent(merchantTransactionId)}`;
+  return `${siteUrl.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 async function createPhonePePaymentV1(
   req: PhonePePayRequest,
   siteUrl: string,
+  options: PhonePePaymentOptions = {},
 ): Promise<{ redirectUrl: string; merchantTransactionId: string; returnUrl: string }> {
   const cfg = getPhonePeConfig();
   if (!cfg) {
     throw new Error("PhonePe is not configured");
   }
 
-  const returnUrl = `${siteUrl}/collaboration/donation/status/?id=${req.merchantTransactionId}`;
+  const returnUrl = buildPhonePeReturnUrl(siteUrl, req.merchantTransactionId, options.returnPath);
+  const callbackUrl = `${siteUrl.replace(/\/$/, "")}${options.callbackPath ?? "/api/donations/phonepe/callback/"}`;
   const payload = {
     merchantId: cfg.clientId,
     merchantTransactionId: req.merchantTransactionId,
@@ -146,7 +162,7 @@ async function createPhonePePaymentV1(
     amount: req.amountPaise,
     redirectUrl: returnUrl,
     redirectMode: "REDIRECT",
-    callbackUrl: `${siteUrl}/api/donations/phonepe/callback/`,
+    callbackUrl,
     mobileNumber: (req.mobileNumber ?? "9999999999").replace(/\D/g, "").slice(-10),
     paymentInstrument: { type: "PAY_PAGE" },
   };
@@ -180,16 +196,17 @@ async function createPhonePePaymentV1(
 async function createPhonePePaymentV2(
   req: PhonePePayRequest,
   siteUrl: string,
+  options: PhonePePaymentOptions = {},
 ): Promise<{ redirectUrl: string; merchantTransactionId: string; returnUrl: string }> {
   const token = await getAccessToken();
-  const returnUrl = `${siteUrl}/collaboration/donation/status/?id=${req.merchantTransactionId}`;
+  const returnUrl = buildPhonePeReturnUrl(siteUrl, req.merchantTransactionId, options.returnPath);
 
   const payload = {
     merchantOrderId: req.merchantTransactionId,
     amount: req.amountPaise,
     paymentFlow: {
       type: "PG_CHECKOUT",
-      message: "Donation to Gnarly Troop",
+      message: options.paymentMessage ?? "Payment to Gnarly Troop",
       merchantUrls: {
         redirectUrl: returnUrl,
       },
@@ -223,7 +240,7 @@ async function createPhonePePaymentV2(
 
 export async function createPhonePePayment(
   req: PhonePePayRequest,
-  options?: { siteUrl?: string },
+  options?: PhonePePaymentOptions,
 ): Promise<{
   redirectUrl: string;
   merchantTransactionId: string;
@@ -231,9 +248,9 @@ export async function createPhonePePayment(
 }> {
   const siteUrl = options?.siteUrl ?? getSiteUrl();
   if (usesPhonePeV1Flow()) {
-    return createPhonePePaymentV1(req, siteUrl);
+    return createPhonePePaymentV1(req, siteUrl, options);
   }
-  return createPhonePePaymentV2(req, siteUrl);
+  return createPhonePePaymentV2(req, siteUrl, options);
 }
 
 async function checkPhonePeStatusV1(merchantTransactionId: string) {
