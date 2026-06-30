@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "ENABLE_ADMIN=true next dev --webpack",
     "build": "next build",
+    "build:server": "NODE_OPTIONS='--max-old-space-size=1536' next build",
+    "build:server:fast": "NODE_OPTIONS='--max-old-space-size=1536' SKIP_BUILD_TYPECHECK=true next build",
     "build:admin": "ENABLE_ADMIN=true next build",
     "build:public": "ENABLE_ADMIN=false next build",
     "start": "next start",
