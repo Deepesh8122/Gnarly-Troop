@@ -38,12 +38,19 @@ export async function buildRegistrationPassPdf(
 
   if (error || !reg) return null;
 
-  const event = reg.events as {
-    title: string;
-    location: string | null;
-    starts_at: string | null;
-    ends_at: string | null;
-  } | null;
+  const event = Array.isArray(reg.events)
+    ? (reg.events[0] as {
+        title: string;
+        location: string | null;
+        starts_at: string | null;
+        ends_at: string | null;
+      } | null)
+    : (reg.events as {
+        title: string;
+        location: string | null;
+        starts_at: string | null;
+        ends_at: string | null;
+      } | null);
 
   if (!event) return null;
 
@@ -86,7 +93,7 @@ export async function buildRegistrationPassPdf(
 }
 
 export function pdfResponse(buffer: Buffer, filename: string): Response {
-  return new Response(buffer, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,

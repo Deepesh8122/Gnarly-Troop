@@ -3,6 +3,8 @@ import Footer from "@/components/sections/SectionFooter";
 import Link from "next/link";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { registrationPassDownloadUrl } from "@/lib/registration/deliver-registration-pass";
+import { formatFeeInr } from "@/lib/registration/gsce-config";
+import { syncRegistrationPaymentStatus } from "@/lib/registration/sync-registration-status";
 import styles from "../RegistrationPage.module.css";
 
 type Props = { searchParams: Promise<{ id?: string }> };
