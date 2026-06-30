@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
@@ -10,8 +11,12 @@ const nextConfig: NextConfig = {
       "./public/receipt-templates/**/*",
     ],
   },
+  // Skip on low-RAM servers when types are checked in CI/dev (SKIP_BUILD_TYPECHECK=true).
+  typescript: {
+    ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "true",
+  },
   turbopack: {
-    root: './',
+    root: path.resolve(process.cwd()),
   },
   // output: "export", // enables static export
   trailingSlash: true,
