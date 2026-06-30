@@ -6,10 +6,11 @@ type PdfDocumentOptions = {
 /** Load PDFKit from node_modules (must stay external — bundled paths break Helvetica.afm). */
 export async function createPdfDocument(options: PdfDocumentOptions = {}) {
   const { default: PDFDocument } = await import("pdfkit");
+  const { margin = 50, ...rest } = options;
   return new PDFDocument({
     size: "A4",
-    margin: 50,
-    ...options,
+    margin,
+    ...rest,
   });
 }
 

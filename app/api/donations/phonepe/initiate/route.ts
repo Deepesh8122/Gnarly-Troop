@@ -4,6 +4,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createPhonePePayment, getPhonePeConfig } from "@/src/lib/phonepe";
 import { getPhonePeEnvironment } from "@/lib/payments/phonepe-env";
 import { getSupabaseEnv, resolveSiteUrl } from "@/lib/env";
+import { receiptKindFromTierType } from "@/lib/receipts/types";
 
 const bodySchema = z.object({
   tierSlug: z.string().optional(),
@@ -45,11 +46,12 @@ export async function POST(request: Request) {
 
   let amountPaise = body.amountPaise ?? 0;
   let tierId: string | null = null;
+  let receiptKind: "donation" | "membership" = "donation";
 
   if (body.tierSlug) {
     const { data: tier } = await supabase
       .from("donation_tiers")
-      .select("id, amount_paise")
+      .select("id, amount_paise, receipt_type")
       .eq("slug", body.tierSlug)
       .eq("is_enabled", true)
       .maybeSingle();
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
     }
     amountPaise = tier.amount_paise;
     tierId = tier.id;
+    receiptKind = receiptKindFromTierType(tier.receipt_type);
   }
 
   if (amountPaise < 100) {
@@ -84,6 +87,7 @@ export async function POST(request: Request) {
     merchant_transaction_id: merchantTransactionId,
     payment_provider: "phonepe",
     payment_environment: getPhonePeEnvironment(),
+    receipt_kind: receiptKind,
     status: "initiated",
   });
 

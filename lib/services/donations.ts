@@ -9,6 +9,7 @@ export type DonationTier = {
   title: string;
   amount_paise: number;
   description: string | null;
+  receipt_type?: "donation" | "membership" | null;
 };
 
 export type DonorLeaderboardRow = {
@@ -28,7 +29,7 @@ export async function getDonationTiers(): Promise<DonationTier[]> {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("donation_tiers")
-    .select("id, slug, title, amount_paise, description")
+    .select("id, slug, title, amount_paise, description, receipt_type")
     .eq("is_enabled", true)
     .order("sort_order");
   return (data ?? []) as DonationTier[];
@@ -46,6 +47,7 @@ export type DonationTransactionRow = {
   payment_environment: PhonePePaymentEnvironment | null;
   status: string | null;
   created_at: string | null;
+  receipt_storage_path: string | null;
 };
 
 type DonationAggregateRow = {
@@ -146,7 +148,7 @@ export async function getRecentDonationTransactions(
   let query = supabase
     .from("donations")
     .select(
-      "id, merchant_transaction_id, phonepe_transaction_id, donor_name, email, phone, amount_paise, payment_provider, payment_environment, status, created_at",
+      "id, merchant_transaction_id, phonepe_transaction_id, donor_name, email, phone, amount_paise, payment_provider, payment_environment, status, created_at, receipt_storage_path",
     )
     .order("created_at", { ascending: false })
     .limit(limit);

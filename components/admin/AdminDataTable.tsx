@@ -106,6 +106,9 @@ function renderCell(row: AdminTableRow, col: AdminTableColumn) {
       href = href.replace(`{${k}}`, String(val ?? ""));
     }
     const label = String(row[col.linkLabelKey ?? col.key] ?? "View");
+    if (!label || label === "—" || label === "-") {
+      return <span className="text-slate-400">—</span>;
+    }
     return (
       <Link href={href} className="admin-link font-medium">
         {label}
