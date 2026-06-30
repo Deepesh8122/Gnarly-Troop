@@ -100,11 +100,30 @@ export async function getAdminEventRegistrations(limit = 200) {
   const { data } = await supabase
     .from("event_registrations")
     .select(
-      "id, full_name, email, phone, organization, designation, eligibility, country, state, city, status, created_at, events(title, slug)",
+      "id, full_name, email, phone, organization, designation, eligibility, accreditation_category, fee_tier, amount_paise, payment_status, delegate_id, country, state, city, status, created_at, receipt_storage_path, receipt_sent_at, events(title, slug)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
   return data ?? [];
+}
+
+export async function getAdminRegistration(id: string) {
+  const supabase = adminDb();
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("event_registrations")
+    .select(
+      `id, full_name, email, official_email, phone, whatsapp_number, organization, designation,
+       country, nationality, state, city, accreditation_category, fee_tier, amount_paise,
+       payment_status, merchant_transaction_id, phonepe_transaction_id, delegate_id, status,
+       created_at, approved_at, rejected_at, rejection_reason, review_notes,
+       receipt_storage_path, receipt_sent_at,
+       photo_storage_path, passport_storage_path, visa_storage_path, government_id_storage_path,
+       metadata, events(title, slug, location, starts_at, ends_at)`,
+    )
+    .eq("id", id)
+    .maybeSingle();
+  return data;
 }
 
 export async function getAdminTeam() {

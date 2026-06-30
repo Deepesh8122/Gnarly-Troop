@@ -7,6 +7,8 @@ import {
   verifyPhonePeCallback,
   verifyPhonePeWebhook,
 } from "@/src/lib/phonepe";
+import { fulfillSuccessfulDonation } from "@/lib/donations/fulfill-donation";
+import { isRegistrationMerchantId } from "@/lib/registration/fulfill-registration-payment";
 
 type WebhookPayload = {
   event?: string;
@@ -47,19 +49,43 @@ export async function POST(request: Request) {
       const statusRes = await checkPhonePeStatus(merchantTransactionId);
       const success = isPhonePePaymentSuccessful(statusRes);
 
-      await supabase
-        .from("donations")
-        .update({
-          status: success ? "success" : "failed",
-          phonepe_transaction_id: getPhonePeTransactionId(statusRes),
-          callback_payload: statusRes,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("merchant_transaction_id", merchantTransactionId);
+      if (isRegistrationMerchantId(merchantTransactionId)) {
+        const phonepeId = getPhonePeTransactionId(statusRes);
+        if (success) {
+          if (phonepeId) {
+            await supabase
+              .from("event_registrations")
+              .update({ phonepe_transaction_id: phonepeId })
+              .eq("merchant_transaction_id", merchantTransactionId);
+          }
+          const { markRegistrationPaymentPaid } = await import(
+            "@/lib/registration/mark-registration-paid"
+          );
+          await markRegistrationPaymentPaid(merchantTransactionId);
+        } else {
+          await supabase
+            .from("event_registrations")
+            .update({
+              payment_status: "failed",
+              status: "failed",
+              phonepe_transaction_id: phonepeId,
+            })
+            .eq("merchant_transaction_id", merchantTransactionId);
+        }
+      } else {
+        await supabase
+          .from("donations")
+          .update({
+            status: success ? "success" : "failed",
+            phonepe_transaction_id: getPhonePeTransactionId(statusRes),
+            callback_payload: statusRes,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("merchant_transaction_id", merchantTransactionId);
 
-      if (success) {
-        const { fulfillSuccessfulDonation } = await import("@/lib/donations/fulfill-donation");
-        await fulfillSuccessfulDonation(merchantTransactionId);
+        if (success) {
+          await fulfillSuccessfulDonation(merchantTransactionId);
+        }
       }
 
       return NextResponse.json({ ok: true });
@@ -108,19 +134,42 @@ export async function POST(request: Request) {
         webhookState === "COMPLETED" ||
         (statusRes ? isPhonePePaymentSuccessful(statusRes) : false));
 
-    await supabase
-      .from("donations")
-      .update({
-        status: verifiedSuccess ? "success" : failed ? "failed" : "initiated",
-        phonepe_transaction_id: phonepeTransactionId,
-        callback_payload: statusRes ?? body,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("merchant_transaction_id", merchantTransactionId);
+    if (isRegistrationMerchantId(merchantTransactionId)) {
+      if (verifiedSuccess) {
+        if (phonepeTransactionId) {
+          await supabase
+            .from("event_registrations")
+            .update({ phonepe_transaction_id: phonepeTransactionId })
+            .eq("merchant_transaction_id", merchantTransactionId);
+        }
+        const { markRegistrationPaymentPaid } = await import(
+          "@/lib/registration/mark-registration-paid"
+        );
+        await markRegistrationPaymentPaid(merchantTransactionId);
+      } else if (failed) {
+        await supabase
+          .from("event_registrations")
+          .update({
+            payment_status: "failed",
+            status: "failed",
+            phonepe_transaction_id: phonepeTransactionId,
+          })
+          .eq("merchant_transaction_id", merchantTransactionId);
+      }
+    } else {
+      await supabase
+        .from("donations")
+        .update({
+          status: verifiedSuccess ? "success" : failed ? "failed" : "initiated",
+          phonepe_transaction_id: phonepeTransactionId,
+          callback_payload: statusRes ?? body,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("merchant_transaction_id", merchantTransactionId);
 
-    if (verifiedSuccess) {
-      const { fulfillSuccessfulDonation } = await import("@/lib/donations/fulfill-donation");
-      await fulfillSuccessfulDonation(merchantTransactionId);
+      if (verifiedSuccess) {
+        await fulfillSuccessfulDonation(merchantTransactionId);
+      }
     }
 
     return NextResponse.json({ ok: true });

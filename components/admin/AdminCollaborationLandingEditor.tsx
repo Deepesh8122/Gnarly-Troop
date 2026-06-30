@@ -7,7 +7,6 @@ import { AdminCheckbox, AdminInput, AdminSelect, AdminTextarea } from "@/compone
 function SectionBlock({
   title,
   showToggle,
-  toggleName,
   toggleDefault,
   children,
 }: {
